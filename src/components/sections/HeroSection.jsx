@@ -1,19 +1,23 @@
 import { useRef, useEffect, useState } from 'react';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { motion, useScroll, AnimatePresence } from 'framer-motion';
 
 const FRAME_COUNT = 202;
+const MIN_FRAMES_TO_START = 20;
 
 export default function HeroSection() {
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
   const [images, setImages] = useState([]);
   const [imagesLoaded, setImagesLoaded] = useState(0);
+  const [isReady, setIsReady] = useState(false);
 
-  const [isMobile, setIsMobile] = useState(false);
+  // Synchronous initial mobile check to prevent state flip on mount
+  const [isMobile, setIsMobile] = useState(() => {
+    return typeof window !== 'undefined' && window.innerWidth < 768;
+  });
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile(); // Check on mount
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
@@ -23,11 +27,12 @@ export default function HeroSection() {
     offset: ["start start", "end start"]
   });
 
-  // Preload images on mount (only for desktop)
+  // Preload images on mount (desktop only)
   useEffect(() => {
     if (isMobile) {
-      setImagesLoaded(10); // Bypass loading screen for mobile instantly
-      return;
+      // Small delay on mobile to allow smooth video buffer & animation without flash
+      const timer = setTimeout(() => setIsReady(true), 400);
+      return () => clearTimeout(timer);
     }
 
     const loadedImages = [];
@@ -35,7 +40,6 @@ export default function HeroSection() {
 
     for (let i = 1; i <= FRAME_COUNT; i++) {
       const img = new Image();
-      // Pad to 4 digits: frame_0001.jpg
       const frameNumber = i.toString().padStart(4, '0');
       img.src = `/frames/frame_${frameNumber}.jpg`;
       img.onload = () => {
@@ -47,25 +51,33 @@ export default function HeroSection() {
     setImages(loadedImages);
   }, [isMobile]);
 
+  // When minimum frames loaded on desktop, set isReady
+  useEffect(() => {
+    if (!isMobile && imagesLoaded >= MIN_FRAMES_TO_START) {
+      setIsReady(true);
+    }
+  }, [imagesLoaded, isMobile]);
+
   // Draw frame on canvas when scroll or images change
   useEffect(() => {
     if (isMobile) return;
-    // Start rendering as soon as we have enough frames to show the first frame
-    if (images.length === 0 || imagesLoaded < 10) return;
+    if (images.length === 0 || imagesLoaded < 1) return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    
-    // Set canvas dimensions
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+
+    const updateCanvasSize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+
+    updateCanvasSize();
 
     const renderFrame = (index) => {
       const img = images[index];
-      if (!img) return;
+      if (!img || !img.complete) return;
 
-      // Draw image covering the whole canvas (object-cover equivalent)
       const hRatio = canvas.width / img.width;
       const vRatio = canvas.height / img.height;
       const ratio = Math.max(hRatio, vRatio);
@@ -77,7 +89,7 @@ export default function HeroSection() {
          centerShift_x, centerShift_y, img.width * ratio, img.height * ratio);
     };
 
-    // Draw initial frame
+    // Render initial frame
     renderFrame(0);
 
     // Subscribe to scroll changes
@@ -89,11 +101,9 @@ export default function HeroSection() {
       requestAnimationFrame(() => renderFrame(frameIndex));
     });
 
-    // Handle window resize
     const handleResize = () => {
       if (isMobile) return;
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      updateCanvasSize();
       const currentLatest = scrollYProgress.get();
       const frameIndex = Math.min(
         FRAME_COUNT - 1,
@@ -101,6 +111,7 @@ export default function HeroSection() {
       );
       renderFrame(frameIndex);
     };
+
     window.addEventListener('resize', handleResize);
 
     return () => {
@@ -109,19 +120,21 @@ export default function HeroSection() {
     };
   }, [images, imagesLoaded, scrollYProgress, isMobile]);
 
-  // Loading state boolean
-  const isLoading = imagesLoaded < 10; // Wait for fewer frames to load instantly
-  const loadingPercentage = Math.min(100, Math.round((imagesLoaded / 10) * 100));
+  const loadingPercentage = isMobile 
+    ? 100 
+    : Math.min(100, Math.round((imagesLoaded / MIN_FRAMES_TO_START) * 100));
 
   return (
-    <section id="home" ref={containerRef} className="relative w-full bg-black h-[100vh] md:h-[100vh]">
+    <section id="home" ref={containerRef} className="relative w-full bg-black h-[100vh]">
       
-      {/* LOADING SCREEN */}
+      {/* STABLE LOADING SCREEN OVERLAY */}
       <AnimatePresence>
-        {isLoading && (
+        {!isReady && (
           <motion.div 
+            key="loader"
             initial={{ opacity: 1 }}
-            exit={{ opacity: 0, transition: { duration: 0.8, ease: "easeInOut" } }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
             className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center"
           >
             <div className="flex flex-col items-center gap-6">
@@ -141,13 +154,14 @@ export default function HeroSection() {
       </AnimatePresence>
 
       {/* NORMAL VIEWPORT */}
-      <div className="relative w-full h-full overflow-hidden flex flex-col items-center justify-center">
+      <div className="relative w-full h-full overflow-hidden flex flex-col items-center justify-center bg-black">
         
         {/* DESKTOP CANVAS BACKGROUND */}
         {!isMobile && (
           <canvas 
             ref={canvasRef} 
-            className="absolute inset-0 w-full h-full z-0 filter grayscale contrast-[1.1] hidden md:block"
+            className="absolute inset-0 w-full h-full z-0 filter grayscale contrast-[1.1] hidden md:block bg-black transition-opacity duration-700"
+            style={{ opacity: isReady ? 1 : 0 }}
           />
         )}
 
@@ -159,7 +173,9 @@ export default function HeroSection() {
             loop 
             muted 
             playsInline
-            className="absolute inset-0 w-full h-full object-cover z-0 md:hidden filter grayscale contrast-125 opacity-70"
+            preload="auto"
+            className="absolute inset-0 w-full h-full object-cover z-0 md:hidden filter grayscale contrast-125 opacity-70 bg-black transition-opacity duration-700"
+            style={{ opacity: isReady ? 0.7 : 0 }}
           />
         )}
 
