@@ -1,13 +1,9 @@
 import { useRef, useEffect, useState } from 'react';
 import { motion, useScroll } from 'framer-motion';
 
-const FRAME_COUNT = 202;
-
 export default function HeroSection() {
   const containerRef = useRef(null);
-  const canvasRef = useRef(null);
-  const [images, setImages] = useState([]);
-  const [imagesLoaded, setImagesLoaded] = useState(0);
+  const videoRef = useRef(null);
   const [isReady, setIsReady] = useState(false);
 
   const { scrollYProgress } = useScroll({
@@ -15,87 +11,34 @@ export default function HeroSection() {
     offset: ["start start", "end start"]
   });
 
-  // Preload images on mount
   useEffect(() => {
-    const loadedImages = [];
-    let loadedCount = 0;
+    const video = videoRef.current;
+    if (!video) return;
 
-    for (let i = 1; i <= FRAME_COUNT; i++) {
-      const img = new Image();
-      const frameNumber = i.toString().padStart(4, '0');
-      img.src = `/frames/frame_${frameNumber}.jpg`;
-      
-      img.onload = () => {
-        loadedCount++;
-        setImagesLoaded(loadedCount);
-        // Set ready as soon as the very first frame is loaded
-        if (i === 1) setIsReady(true);
-      };
-      
-      loadedImages.push(img);
-    }
-    setImages(loadedImages);
-  }, []);
-
-  // Draw frame on canvas when scroll or images change
-  useEffect(() => {
-    if (images.length === 0 || imagesLoaded < 1) return;
-
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-
-    const updateCanvasSize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+    // Ensure we can start scrubbing once video metadata is known
+    const handleLoadedMetadata = () => {
+      setIsReady(true);
     };
 
-    updateCanvasSize();
+    video.addEventListener('loadedmetadata', handleLoadedMetadata);
+    // In case it's already loaded from cache
+    if (video.readyState >= 1) handleLoadedMetadata();
 
-    const renderFrame = (index) => {
-      const img = images[index];
-      if (!img || !img.complete) return;
-
-      const hRatio = canvas.width / img.width;
-      const vRatio = canvas.height / img.height;
-      const ratio = Math.max(hRatio, vRatio);
-      const centerShift_x = (canvas.width - img.width * ratio) / 2;
-      const centerShift_y = (canvas.height - img.height * ratio) / 2;  
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0, img.width, img.height,
-         centerShift_x, centerShift_y, img.width * ratio, img.height * ratio);
-    };
-
-    // Render initial frame immediately
-    renderFrame(0);
-
-    // Subscribe to scroll changes
+    // Bind scroll progress directly to video playback time
     const unsubscribe = scrollYProgress.onChange((latest) => {
-      const frameIndex = Math.min(
-        FRAME_COUNT - 1,
-        Math.floor(latest * FRAME_COUNT)
-      );
-      requestAnimationFrame(() => renderFrame(frameIndex));
+      if (video.readyState >= 1 && video.duration) {
+        // Use requestAnimationFrame to ensure smooth scrubbing
+        requestAnimationFrame(() => {
+          video.currentTime = latest * video.duration;
+        });
+      }
     });
 
-    const handleResize = () => {
-      updateCanvasSize();
-      const currentLatest = scrollYProgress.get();
-      const frameIndex = Math.min(
-        FRAME_COUNT - 1,
-        Math.floor(currentLatest * FRAME_COUNT)
-      );
-      renderFrame(frameIndex);
-    };
-
-    window.addEventListener('resize', handleResize);
-
     return () => {
+      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
       unsubscribe();
-      window.removeEventListener('resize', handleResize);
     };
-  }, [images, imagesLoaded, scrollYProgress]);
+  }, [scrollYProgress]);
 
   return (
     <section 
@@ -104,13 +47,16 @@ export default function HeroSection() {
       className="relative w-full bg-black h-[100vh] bg-cover bg-center"
       style={{ backgroundImage: "url('/frames/frame_0001.jpg')" }}
     >
-      {/* NORMAL VIEWPORT */}
       <div className="relative w-full h-full overflow-hidden flex flex-col items-center justify-center bg-black/40">
         
-        {/* CANVAS BACKGROUND (Now active on all devices) */}
-        <canvas 
-          ref={canvasRef} 
-          className="absolute inset-0 w-full h-full z-0 filter grayscale contrast-[1.1] transition-opacity duration-300"
+        {/* VIDEO BACKGROUND (Scrubbable & High Performance) */}
+        <video 
+          ref={videoRef}
+          src="/videos/desktop_scrub.mp4"
+          muted
+          playsInline
+          preload="auto"
+          className="absolute inset-0 w-full h-full object-cover z-0 filter grayscale contrast-[1.1] transition-opacity duration-300"
           style={{ opacity: isReady ? 1 : 0 }}
         />
 
