@@ -28,23 +28,30 @@ export default function MusicEditor() {
     const apiKey = '6e07b57efa93945b1b15ba119d359069';
     setUploadingTrackId(tracks[trackIndex].id);
     
-    const formData = new FormData();
-    formData.append('image', file);
-
     try {
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = (error) => reject(error);
+      });
+
+      const formData = new FormData();
+      formData.append('image', base64);
+
       const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
         method: 'POST',
         body: formData
       });
       const json = await res.json();
       
-      if (json.success) {
+      if (json.success && json.data?.url) {
         handleTrackChange(trackIndex, 'image', json.data.url);
       } else {
-        alert('Upload failed: ' + json.error.message);
+        const msg = json?.error?.message || json?.message || 'Unknown error';
+        alert('Upload failed: ' + msg);
       }
     } catch (err) {
-      alert('Error uploading image.');
+      alert('Error uploading image: ' + (err.message || err));
     } finally {
       setUploadingTrackId(null);
     }

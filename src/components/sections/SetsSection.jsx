@@ -54,9 +54,9 @@ export default function SetsSection() {
             <div className="w-12 h-1 bg-white mb-8"></div>
             <h2 className="text-4xl md:text-5xl lg:text-7xl font-heading font-black text-white uppercase tracking-tighter leading-[0.9] mb-6 whitespace-pre-wrap">
               {sets.title} <br />
-              <span className="text-gray-500">{sets.subtitle}</span>
+              <span className="text-white">{sets.subtitle}</span>
             </h2>
-            <p className="text-white font-sans text-sm md:text-base tracking-widest uppercase mb-2">
+            <p className="text-white font-sans font-bold text-sm md:text-base tracking-widest uppercase mb-2">
               {sets.description}
             </p>
             <p className="text-white font-sans text-xs md:text-sm tracking-widest">
@@ -103,7 +103,7 @@ export default function SetsSection() {
             <img 
               src={`https://img.youtube.com/vi/${sets.videoId}/maxresdefault.jpg`} 
               alt={sets.title} 
-              className="w-full h-full object-cover opacity-60 saturate-50 group-hover:scale-105 group-hover:opacity-100 group-hover:saturate-100 transition-all duration-700 ease-out"
+              className="w-full h-full object-cover opacity-90 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700 ease-out"
             />
             
             {/* Overlaid Play Button (Center) */}

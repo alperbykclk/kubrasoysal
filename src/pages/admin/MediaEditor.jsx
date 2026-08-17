@@ -10,35 +10,39 @@ export default function MediaEditor() {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Hardcoded ImgBB API Key as requested by user
     const apiKey = '6e07b57efa93945b1b15ba119d359069';
-
     setUploadingAlbumId(albums[albumIndex].id);
     
-    const formData = new FormData();
-    formData.append('image', file);
-
     try {
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = (error) => reject(error);
+      });
+
+      const formData = new FormData();
+      formData.append('image', base64);
+
       const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
         method: 'POST',
         body: formData
       });
       const json = await res.json();
       
-      if (json.success) {
+      if (json.success && json.data?.url) {
         const imageUrl = json.data.url;
         const updated = [...albums];
         updated[albumIndex].images.push(imageUrl);
-        // If it's the first image, make it the cover
         if (!updated[albumIndex].coverImage) {
           updated[albumIndex].coverImage = imageUrl;
         }
         setAlbums(updated);
       } else {
-        alert('Upload failed: ' + json.error.message);
+        const msg = json?.error?.message || json?.message || 'Unknown error';
+        alert('Upload failed: ' + msg);
       }
     } catch (err) {
-      alert('Error uploading image.');
+      alert('Error uploading image: ' + (err.message || err));
     } finally {
       setUploadingAlbumId(null);
     }

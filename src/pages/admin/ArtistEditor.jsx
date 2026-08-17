@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCMS } from '../../context/CMSContext';
 
 export default function ArtistEditor() {
@@ -9,8 +9,14 @@ export default function ArtistEditor() {
   });
   const [isUploading, setIsUploading] = useState(false);
 
+  useEffect(() => {
+    if (data.artist) {
+      setArtist(data.artist);
+    }
+  }, [data.artist]);
+
   const handleChange = (field, value) => {
-    setArtist({ ...artist, [field]: value });
+    setArtist(prev => ({ ...prev, [field]: value }));
   };
 
   const handleImageUpload = async (e) => {
@@ -20,23 +26,32 @@ export default function ArtistEditor() {
     const apiKey = '6e07b57efa93945b1b15ba119d359069';
     setIsUploading(true);
     
-    const formData = new FormData();
-    formData.append('image', file);
-
     try {
+      // Convert file to base64 for maximum ImgBB reliability
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = (error) => reject(error);
+      });
+
+      const formData = new FormData();
+      formData.append('image', base64);
+
       const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
         method: 'POST',
         body: formData
       });
       const json = await res.json();
       
-      if (json.success) {
+      if (json.success && json.data?.url) {
         handleChange('image', json.data.url);
+        alert('Image uploaded successfully!');
       } else {
-        alert('Upload failed: ' + json.error.message);
+        const msg = json?.error?.message || json?.message || 'Unknown ImgBB error';
+        alert('Upload failed: ' + msg);
       }
     } catch (err) {
-      alert('Error uploading image.');
+      alert('Error uploading image: ' + (err.message || err));
     } finally {
       setIsUploading(false);
     }
@@ -55,7 +70,7 @@ export default function ArtistEditor() {
         <div>
           <label className="text-[10px] uppercase tracking-widest text-gray-500 mb-1 block">Title</label>
           <input 
-            value={artist.title} onChange={(e) => handleChange('title', e.target.value)}
+            value={artist.title || ''} onChange={(e) => handleChange('title', e.target.value)}
             className="w-full bg-[#050505] border border-white/20 p-3 text-white text-sm focus:border-white"
           />
         </div>
@@ -73,6 +88,7 @@ export default function ArtistEditor() {
                 accept="image/*" 
                 className="hidden" 
                 onChange={handleImageUpload}
+                disabled={isUploading}
               />
             </label>
           </div>
@@ -81,28 +97,28 @@ export default function ArtistEditor() {
         <div>
           <label className="text-[10px] uppercase tracking-widest text-gray-500 mb-1 block">Paragraph 1</label>
           <textarea 
-            value={artist.text1} onChange={(e) => handleChange('text1', e.target.value)}
+            value={artist.text1 || ''} onChange={(e) => handleChange('text1', e.target.value)}
             className="w-full bg-[#050505] border border-white/20 p-3 text-white text-sm focus:border-white min-h-[100px]"
           />
         </div>
         <div>
           <label className="text-[10px] uppercase tracking-widest text-gray-500 mb-1 block">Paragraph 2</label>
           <textarea 
-            value={artist.text2} onChange={(e) => handleChange('text2', e.target.value)}
+            value={artist.text2 || ''} onChange={(e) => handleChange('text2', e.target.value)}
             className="w-full bg-[#050505] border border-white/20 p-3 text-white text-sm focus:border-white min-h-[100px]"
           />
         </div>
         <div>
           <label className="text-[10px] uppercase tracking-widest text-gray-500 mb-1 block">Highlighted Quote</label>
           <textarea 
-            value={artist.quote} onChange={(e) => handleChange('quote', e.target.value)}
+            value={artist.quote || ''} onChange={(e) => handleChange('quote', e.target.value)}
             className="w-full bg-[#050505] border border-white/20 p-3 text-white text-sm focus:border-white min-h-[60px]"
           />
         </div>
         <div>
           <label className="text-[10px] uppercase tracking-widest text-gray-500 mb-1 block">Paragraph 3</label>
           <textarea 
-            value={artist.text3} onChange={(e) => handleChange('text3', e.target.value)}
+            value={artist.text3 || ''} onChange={(e) => handleChange('text3', e.target.value)}
             className="w-full bg-[#050505] border border-white/20 p-3 text-white text-sm focus:border-white min-h-[100px]"
           />
         </div>
@@ -114,3 +130,4 @@ export default function ArtistEditor() {
     </div>
   );
 }
+

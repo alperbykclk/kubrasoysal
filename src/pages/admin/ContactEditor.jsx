@@ -58,17 +58,27 @@ export default function ContactEditor() {
     if (!file) return;
     setUploading(true);
     try {
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = (error) => reject(error);
+      });
+
       const formData = new FormData();
-      formData.append('image', file);
+      formData.append('image', base64);
       const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, {
         method: 'POST', body: formData
       });
       const json = await res.json();
-      if (json.success) {
+      if (json.success && json.data?.url) {
         setContact(prev => ({ ...prev, techRiderImage: json.data.url }));
+        alert('Tech Rider image uploaded successfully!');
+      } else {
+        const msg = json?.error?.message || json?.message || 'Unknown error';
+        alert('Upload failed: ' + msg);
       }
     } catch (err) {
-      alert('Upload failed: ' + err.message);
+      alert('Upload failed: ' + (err.message || err));
     } finally {
       setUploading(false);
     }
