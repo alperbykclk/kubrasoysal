@@ -1,8 +1,7 @@
 import { useRef, useEffect, useState } from 'react';
-import { motion, useScroll, AnimatePresence } from 'framer-motion';
+import { motion, useScroll } from 'framer-motion';
 
 const FRAME_COUNT = 202;
-const MIN_FRAMES_TO_START = 20;
 
 export default function HeroSection() {
   const containerRef = useRef(null);
@@ -11,30 +10,13 @@ export default function HeroSection() {
   const [imagesLoaded, setImagesLoaded] = useState(0);
   const [isReady, setIsReady] = useState(false);
 
-  // Synchronous initial mobile check to prevent state flip on mount
-  const [isMobile, setIsMobile] = useState(() => {
-    return typeof window !== 'undefined' && window.innerWidth < 768;
-  });
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end start"]
   });
 
-  // Preload images on mount (desktop only)
+  // Preload images on mount
   useEffect(() => {
-    if (isMobile) {
-      // Small delay on mobile to allow smooth video buffer & animation without flash
-      const timer = setTimeout(() => setIsReady(true), 400);
-      return () => clearTimeout(timer);
-    }
-
     const loadedImages = [];
     let loadedCount = 0;
 
@@ -42,25 +24,21 @@ export default function HeroSection() {
       const img = new Image();
       const frameNumber = i.toString().padStart(4, '0');
       img.src = `/frames/frame_${frameNumber}.jpg`;
+      
       img.onload = () => {
         loadedCount++;
         setImagesLoaded(loadedCount);
+        // Set ready as soon as the very first frame is loaded
+        if (i === 1) setIsReady(true);
       };
+      
       loadedImages.push(img);
     }
     setImages(loadedImages);
-  }, [isMobile]);
-
-  // When minimum frames loaded on desktop, set isReady
-  useEffect(() => {
-    if (!isMobile && imagesLoaded >= MIN_FRAMES_TO_START) {
-      setIsReady(true);
-    }
-  }, [imagesLoaded, isMobile]);
+  }, []);
 
   // Draw frame on canvas when scroll or images change
   useEffect(() => {
-    if (isMobile) return;
     if (images.length === 0 || imagesLoaded < 1) return;
 
     const canvas = canvasRef.current;
@@ -89,7 +67,7 @@ export default function HeroSection() {
          centerShift_x, centerShift_y, img.width * ratio, img.height * ratio);
     };
 
-    // Render initial frame
+    // Render initial frame immediately
     renderFrame(0);
 
     // Subscribe to scroll changes
@@ -102,7 +80,6 @@ export default function HeroSection() {
     });
 
     const handleResize = () => {
-      if (isMobile) return;
       updateCanvasSize();
       const currentLatest = scrollYProgress.get();
       const frameIndex = Math.min(
@@ -118,42 +95,24 @@ export default function HeroSection() {
       unsubscribe();
       window.removeEventListener('resize', handleResize);
     };
-  }, [images, imagesLoaded, scrollYProgress, isMobile]);
-
-  const loadingPercentage = isMobile 
-    ? 100 
-    : Math.min(100, Math.round((imagesLoaded / MIN_FRAMES_TO_START) * 100));
+  }, [images, imagesLoaded, scrollYProgress]);
 
   return (
-    <section id="home" ref={containerRef} className="relative w-full bg-black h-[100vh]">
-      
-
-
+    <section 
+      id="home" 
+      ref={containerRef} 
+      className="relative w-full bg-black h-[100vh] bg-cover bg-center"
+      style={{ backgroundImage: "url('/frames/frame_0001.jpg')" }}
+    >
       {/* NORMAL VIEWPORT */}
-      <div className="relative w-full h-full overflow-hidden flex flex-col items-center justify-center bg-black">
+      <div className="relative w-full h-full overflow-hidden flex flex-col items-center justify-center bg-black/40">
         
-        {/* DESKTOP CANVAS BACKGROUND */}
-        {!isMobile && (
-          <canvas 
-            ref={canvasRef} 
-            className="absolute inset-0 w-full h-full z-0 filter grayscale contrast-[1.1] hidden md:block bg-black transition-opacity duration-700"
-            style={{ opacity: isReady ? 1 : 0 }}
-          />
-        )}
-
-        {/* MOBILE VIDEO BACKGROUND */}
-        {isMobile && (
-          <video 
-            src="/videos/mobile_bg.mp4"
-            autoPlay 
-            loop 
-            muted 
-            playsInline
-            preload="auto"
-            className="absolute inset-0 w-full h-full object-cover z-0 md:hidden filter grayscale contrast-125 opacity-70 bg-black transition-opacity duration-700"
-            style={{ opacity: isReady ? 0.7 : 0 }}
-          />
-        )}
+        {/* CANVAS BACKGROUND (Now active on all devices) */}
+        <canvas 
+          ref={canvasRef} 
+          className="absolute inset-0 w-full h-full z-0 filter grayscale contrast-[1.1] transition-opacity duration-300"
+          style={{ opacity: isReady ? 1 : 0 }}
+        />
 
         {/* SUBTLE VIGNETTE */}
         <div className="absolute inset-0 z-0 pointer-events-none bg-[radial-gradient(circle,transparent_40%,rgba(0,0,0,0.5)_100%)]"></div>
