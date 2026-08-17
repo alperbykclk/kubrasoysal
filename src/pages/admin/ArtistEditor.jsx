@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useCMS } from '../../context/CMSContext';
+import { uploadImage } from '../../lib/uploader';
 
 export default function ArtistEditor() {
   const { data, updateSection } = useCMS();
@@ -23,38 +24,20 @@ export default function ArtistEditor() {
     const file = e.target.files[0];
     if (!file) return;
 
-    const apiKey = '6e07b57efa93945b1b15ba119d359069';
     setIsUploading(true);
-    
     try {
-      // Convert file to base64 for maximum ImgBB reliability
-      const base64 = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result.split(',')[1]);
-        reader.onerror = (error) => reject(error);
-      });
-
-      const formData = new FormData();
-      formData.append('image', base64);
-
-      const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
-        method: 'POST',
-        body: formData
-      });
-      const json = await res.json();
-      
-      if (json.success && json.data?.url) {
-        handleChange('image', json.data.url);
-        alert('Image uploaded successfully!');
-      } else {
-        const msg = json?.error?.message || json?.message || 'Unknown ImgBB error';
-        alert('Upload failed: ' + msg);
-      }
+      const url = await uploadImage(file);
+      handleChange('image', url);
+      alert('Image uploaded successfully!');
     } catch (err) {
       alert('Error uploading image: ' + (err.message || err));
     } finally {
       setIsUploading(false);
     }
+  };
+
+  const handleRemoveImage = () => {
+    handleChange('image', '');
   };
 
   const handleSave = () => {
@@ -79,9 +62,19 @@ export default function ArtistEditor() {
           <label className="text-[10px] uppercase tracking-widest text-gray-500 mb-1 block">Portrait Image</label>
           <div className="flex items-center gap-4">
             {artist.image && (
-              <img src={artist.image} alt="cover" className="w-16 h-20 object-cover border border-white/20 rounded-sm" />
+              <div className="relative group">
+                <img src={artist.image} alt="cover" className="w-20 h-24 object-cover border border-white/20 rounded-sm" />
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  className="absolute -top-2 -right-2 bg-red-600 hover:bg-red-700 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg transition-colors"
+                  title="Remove Photo"
+                >
+                  ×
+                </button>
+              </div>
             )}
-            <label className="cursor-pointer bg-white/5 hover:bg-white/10 border border-white/20 px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors">
+            <label className="cursor-pointer bg-white/5 hover:bg-white/10 border border-white/20 px-4 py-3 text-xs font-bold uppercase tracking-widest transition-colors">
               {isUploading ? 'Uploading...' : 'Upload Image'}
               <input 
                 type="file" 

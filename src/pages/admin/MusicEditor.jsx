@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useCMS } from '../../context/CMSContext';
+import { uploadImage } from '../../lib/uploader';
 
 export default function MusicEditor() {
   const { data, updateSection } = useCMS();
@@ -25,36 +26,19 @@ export default function MusicEditor() {
     const file = e.target.files[0];
     if (!file) return;
 
-    const apiKey = '6e07b57efa93945b1b15ba119d359069';
     setUploadingTrackId(tracks[trackIndex].id);
-    
     try {
-      const base64 = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result.split(',')[1]);
-        reader.onerror = (error) => reject(error);
-      });
-
-      const formData = new FormData();
-      formData.append('image', base64);
-
-      const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
-        method: 'POST',
-        body: formData
-      });
-      const json = await res.json();
-      
-      if (json.success && json.data?.url) {
-        handleTrackChange(trackIndex, 'image', json.data.url);
-      } else {
-        const msg = json?.error?.message || json?.message || 'Unknown error';
-        alert('Upload failed: ' + msg);
-      }
+      const url = await uploadImage(file);
+      handleTrackChange(trackIndex, 'image', url);
     } catch (err) {
       alert('Error uploading image: ' + (err.message || err));
     } finally {
       setUploadingTrackId(null);
     }
+  };
+
+  const handleRemoveTrackImage = (trackIndex) => {
+    handleTrackChange(trackIndex, 'image', '');
   };
 
   const handleSave = () => {
@@ -78,7 +62,7 @@ export default function MusicEditor() {
               onClick={() => handleRemoveTrack(index)}
               className="absolute top-4 right-4 text-red-500 hover:text-red-400 text-xs font-bold uppercase tracking-widest"
             >
-              Remove
+              Remove Track
             </button>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -99,7 +83,17 @@ export default function MusicEditor() {
                 <label className="text-[10px] uppercase tracking-widest text-gray-500 mb-1 block">Track Cover</label>
                 <div className="flex items-center gap-4">
                   {track.image && (
-                    <img src={track.image} alt="cover" className="w-12 h-12 object-cover border border-white/20 rounded-sm" />
+                    <div className="relative group">
+                      <img src={track.image} alt="cover" className="w-14 h-14 object-cover border border-white/20 rounded-sm" />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTrackImage(index)}
+                        className="absolute -top-2 -right-2 bg-red-600 hover:bg-red-700 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shadow-lg transition-colors"
+                        title="Remove Cover Photo"
+                      >
+                        ×
+                      </button>
+                    </div>
                   )}
                   <label className="cursor-pointer bg-white/5 hover:bg-white/10 border border-white/20 px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors">
                     {uploadingTrackId === track.id ? 'Uploading...' : 'Upload Image'}

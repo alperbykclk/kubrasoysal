@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useCMS } from '../../context/CMSContext';
-
-const IMGBB_KEY = '6e07b57efa93945b1b15ba119d359069';
+import { uploadImage } from '../../lib/uploader';
 
 export default function ContactEditor() {
   const { data, updateSection } = useCMS();
@@ -40,7 +39,7 @@ export default function ContactEditor() {
   }, [data.contact]);
 
   const handleChange = (field, value) => {
-    setContact({ ...contact, [field]: value });
+    setContact(prev => ({ ...prev, [field]: value }));
   };
 
   // --- Socials ---
@@ -58,30 +57,18 @@ export default function ContactEditor() {
     if (!file) return;
     setUploading(true);
     try {
-      const base64 = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result.split(',')[1]);
-        reader.onerror = (error) => reject(error);
-      });
-
-      const formData = new FormData();
-      formData.append('image', base64);
-      const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, {
-        method: 'POST', body: formData
-      });
-      const json = await res.json();
-      if (json.success && json.data?.url) {
-        setContact(prev => ({ ...prev, techRiderImage: json.data.url }));
-        alert('Tech Rider image uploaded successfully!');
-      } else {
-        const msg = json?.error?.message || json?.message || 'Unknown error';
-        alert('Upload failed: ' + msg);
-      }
+      const url = await uploadImage(file);
+      setContact(prev => ({ ...prev, techRiderImage: url }));
+      alert('Tech Rider image uploaded successfully!');
     } catch (err) {
       alert('Upload failed: ' + (err.message || err));
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleRemoveTechRiderImage = () => {
+    setContact(prev => ({ ...prev, techRiderImage: '' }));
   };
 
   const handleSave = async () => {
@@ -184,7 +171,17 @@ export default function ContactEditor() {
         <div className="md:col-span-2">
           <label className="text-[10px] uppercase tracking-widest text-gray-500 mb-2 block">Equipment & Stage Plot Image</label>
           {contact.techRiderImage && (
-            <img src={contact.techRiderImage} alt="Tech Rider" className="w-48 h-auto border border-white/10 mb-3 object-contain" />
+            <div className="relative group w-48 mb-3">
+              <img src={contact.techRiderImage} alt="Tech Rider" className="w-48 h-auto border border-white/10 object-contain rounded-sm" />
+              <button
+                type="button"
+                onClick={handleRemoveTechRiderImage}
+                className="absolute -top-2 -right-2 bg-red-600 hover:bg-red-700 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg transition-colors"
+                title="Remove Image"
+              >
+                ×
+              </button>
+            </div>
           )}
           <label className="flex items-center gap-3 cursor-pointer border border-white/20 px-4 py-3 hover:border-white transition-colors w-fit">
             <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useCMS } from '../../context/CMSContext';
+import { uploadImage } from '../../lib/uploader';
 
 export default function MediaEditor() {
   const { data, updateSection } = useCMS();
@@ -10,37 +11,16 @@ export default function MediaEditor() {
     const file = e.target.files[0];
     if (!file) return;
 
-    const apiKey = '6e07b57efa93945b1b15ba119d359069';
     setUploadingAlbumId(albums[albumIndex].id);
     
     try {
-      const base64 = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result.split(',')[1]);
-        reader.onerror = (error) => reject(error);
-      });
-
-      const formData = new FormData();
-      formData.append('image', base64);
-
-      const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
-        method: 'POST',
-        body: formData
-      });
-      const json = await res.json();
-      
-      if (json.success && json.data?.url) {
-        const imageUrl = json.data.url;
-        const updated = [...albums];
-        updated[albumIndex].images.push(imageUrl);
-        if (!updated[albumIndex].coverImage) {
-          updated[albumIndex].coverImage = imageUrl;
-        }
-        setAlbums(updated);
-      } else {
-        const msg = json?.error?.message || json?.message || 'Unknown error';
-        alert('Upload failed: ' + msg);
+      const url = await uploadImage(file);
+      const updated = [...albums];
+      updated[albumIndex].images.push(url);
+      if (!updated[albumIndex].coverImage) {
+        updated[albumIndex].coverImage = url;
       }
+      setAlbums(updated);
     } catch (err) {
       alert('Error uploading image: ' + (err.message || err));
     } finally {
@@ -60,7 +40,6 @@ export default function MediaEditor() {
   const handleRemoveImage = (albumIndex, imageIndex) => {
     const updated = [...albums];
     updated[albumIndex].images.splice(imageIndex, 1);
-    // If the cover image was removed, set to first available or empty
     if (updated[albumIndex].images.length > 0) {
       updated[albumIndex].coverImage = updated[albumIndex].images[0];
     } else {
@@ -114,10 +93,12 @@ export default function MediaEditor() {
                   <div key={imgIndex} className="relative aspect-square group">
                     <img src={img} className="w-full h-full object-cover rounded-sm border border-white/10" />
                     <button 
+                      type="button"
                       onClick={() => handleRemoveImage(albumIndex, imgIndex)}
-                      className="absolute inset-0 bg-red-500/80 text-white font-bold opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
+                      className="absolute -top-2 -right-2 bg-red-600 hover:bg-red-700 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg transition-colors z-10"
+                      title="Remove Photo"
                     >
-                      REMOVE
+                      ×
                     </button>
                   </div>
                 ))}
