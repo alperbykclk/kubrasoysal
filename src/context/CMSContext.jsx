@@ -142,9 +142,6 @@ export const CMSProvider = ({ children }) => {
     }
   };
 
-  if (loading) {
-    return null;
-  }
 
   return (
     <CMSContext.Provider value={{ data, updateSection }}>

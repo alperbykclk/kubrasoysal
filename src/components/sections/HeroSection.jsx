@@ -127,31 +127,7 @@ export default function HeroSection() {
   return (
     <section id="home" ref={containerRef} className="relative w-full bg-black h-[100vh]">
       
-      {/* STABLE LOADING SCREEN OVERLAY */}
-      <AnimatePresence>
-        {!isReady && (
-          <motion.div 
-            key="loader"
-            initial={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center"
-          >
-            <div className="flex flex-col items-center gap-6">
-              <h1 className="text-4xl md:text-6xl font-heading font-black text-white uppercase tracking-tighter mix-blend-difference drop-shadow-2xl">KS</h1>
-              <div className="w-48 h-[2px] bg-white/20 rounded-full overflow-hidden">
-                <motion.div 
-                  className="h-full bg-white"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${loadingPercentage}%` }}
-                  transition={{ ease: "linear", duration: 0.2 }}
-                />
-              </div>
-              <span className="text-gray-400 font-sans text-xs tracking-[0.3em] uppercase">LOADING {loadingPercentage}%</span>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
 
       {/* NORMAL VIEWPORT */}
       <div className="relative w-full h-full overflow-hidden flex flex-col items-center justify-center bg-black">
