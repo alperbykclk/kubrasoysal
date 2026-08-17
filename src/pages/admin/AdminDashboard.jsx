@@ -5,11 +5,13 @@ import TourEditor from './TourEditor';
 import MediaEditor from './MediaEditor';
 import ArtistEditor from './ArtistEditor';
 import ContactEditor from './ContactEditor';
+import NavigationEditor from './NavigationEditor';
 
 export default function AdminDashboard({ onLogout }) {
   const [activeTab, setActiveTab] = useState('sets');
 
   const tabs = [
+    { id: 'navigation', label: 'Navigation Menu' },
     { id: 'sets', label: 'Live Sets' },
     { id: 'music', label: 'Latest Music' },
     { id: 'tour', label: 'Tour Dates' },
@@ -56,6 +58,7 @@ export default function AdminDashboard({ onLogout }) {
       {/* Main Content Area */}
       <main className="flex-1 p-6 md:p-12 overflow-y-auto">
         <div className="max-w-5xl mx-auto">
+          {activeTab === 'navigation' && <NavigationEditor />}
           {activeTab === 'sets' && <SetsEditor />}
           {activeTab === 'music' && <MusicEditor />}
           {activeTab === 'tour' && <TourEditor />}

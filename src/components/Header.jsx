@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useCMS } from '../context/CMSContext';
 
-const navLinks = [
+const defaultNavLinks = [
   { name: 'Home', path: '#home' },
   { name: 'Music', path: '#music' },
   { name: 'Tour', path: '#tour' },
@@ -11,6 +12,16 @@ const navLinks = [
 ];
 
 export default function Header() {
+  const { data } = useCMS();
+  const navLinks = Array.isArray(data?.navigation) && data.navigation.length > 0 
+    ? data.navigation 
+    : defaultNavLinks;
+
+  const socials = Array.isArray(data?.contact?.socials) ? data.contact.socials : [
+    { name: "Instagram", url: "https://instagram.com/kubrasoysal" },
+    { name: "SoundCloud", url: "https://soundcloud.com/kubrasoysal" }
+  ];
+
   const [activeSection, setActiveSection] = useState('#home');
   const [scrolled, setScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -31,7 +42,10 @@ export default function Header() {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
       
-      const sections = navLinks.map(link => link.path.substring(1));
+      const sections = navLinks
+        .map(link => (link.path.startsWith('#') ? link.path.substring(1) : null))
+        .filter(Boolean);
+
       for (const section of sections.reverse()) {
         const el = document.getElementById(section);
         if (el) {
@@ -46,7 +60,7 @@ export default function Header() {
     
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [navLinks]);
 
   return (
     <>
@@ -106,7 +120,7 @@ export default function Header() {
                     initial={{ opacity: 0, y: 30, rotateX: -20 }}
                     animate={{ opacity: 1, y: 0, rotateX: 0 }}
                     transition={{ delay: 0.1 + (i * 0.1), duration: 0.5, ease: "easeOut" }}
-                    key={link.name} 
+                    key={link.name + i} 
                     href={link.path}
                     onClick={() => setIsMenuOpen(false)}
                     className="relative group flex items-center justify-center"
@@ -129,10 +143,12 @@ export default function Header() {
               })}
             </nav>
             
-            <div className="relative z-10 py-4 md:py-6 flex justify-center gap-6 md:gap-10 border-t border-white/5">
-               <a href="#" className="text-gray-500 hover:text-white transition-colors font-heading font-bold uppercase tracking-widest text-[10px] md:text-xs">Instagram</a>
-               <a href="#" className="text-gray-500 hover:text-white transition-colors font-heading font-bold uppercase tracking-widest text-[10px] md:text-xs">Spotify</a>
-               <a href="#" className="text-gray-500 hover:text-white transition-colors font-heading font-bold uppercase tracking-widest text-[10px] md:text-xs">YouTube</a>
+            <div className="relative z-10 py-4 md:py-6 flex flex-wrap justify-center gap-6 md:gap-10 border-t border-white/5">
+               {socials.map((s, i) => (
+                 <a key={i} href={s.url} target="_blank" rel="noreferrer" className="text-gray-500 hover:text-white transition-colors font-heading font-bold uppercase tracking-widest text-[10px] md:text-xs">
+                   {s.name}
+                 </a>
+               ))}
             </div>
           </motion.div>
         )}
@@ -140,3 +156,4 @@ export default function Header() {
     </>
   );
 }
+
