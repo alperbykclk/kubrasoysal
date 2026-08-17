@@ -6,17 +6,31 @@ const FRAME_COUNT = 202;
 export default function HeroSection() {
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
+  const videoRef = useRef(null);
   const [images, setImages] = useState([]);
   const [imagesLoaded, setImagesLoaded] = useState(0);
   const [isReady, setIsReady] = useState(false);
+
+  // Synchronous initial mobile check
+  const [isMobile, setIsMobile] = useState(() => {
+    return typeof window !== 'undefined' && window.innerWidth < 768;
+  });
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end start"]
   });
 
-  // Preload images on mount
+  // Preload images on mount (Desktop Only)
   useEffect(() => {
+    if (isMobile) return;
+
     const loadedImages = [];
     let loadedCount = 0;
 
@@ -28,17 +42,45 @@ export default function HeroSection() {
       img.onload = () => {
         loadedCount++;
         setImagesLoaded(loadedCount);
-        // Set ready as soon as the very first frame is loaded
         if (i === 1) setIsReady(true);
       };
       
       loadedImages.push(img);
     }
     setImages(loadedImages);
-  }, []);
+  }, [isMobile]);
 
-  // Draw frame on canvas when scroll or images change
+  // Mobile Video Setup & Scrubbing
   useEffect(() => {
+    if (!isMobile) return;
+    
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handleLoadedMetadata = () => {
+      setIsReady(true);
+    };
+
+    video.addEventListener('loadedmetadata', handleLoadedMetadata);
+    if (video.readyState >= 1) handleLoadedMetadata();
+
+    const unsubscribe = scrollYProgress.onChange((latest) => {
+      if (video.readyState >= 1 && video.duration) {
+        requestAnimationFrame(() => {
+          video.currentTime = latest * video.duration;
+        });
+      }
+    });
+
+    return () => {
+      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      unsubscribe();
+    };
+  }, [isMobile, scrollYProgress]);
+
+  // Desktop Canvas Drawing & Scrubbing
+  useEffect(() => {
+    if (isMobile) return;
     if (images.length === 0 || imagesLoaded < 1) return;
 
     const canvas = canvasRef.current;
@@ -67,10 +109,8 @@ export default function HeroSection() {
          centerShift_x, centerShift_y, img.width * ratio, img.height * ratio);
     };
 
-    // Render initial frame immediately
     renderFrame(0);
 
-    // Subscribe to scroll changes
     const unsubscribe = scrollYProgress.onChange((latest) => {
       const frameIndex = Math.min(
         FRAME_COUNT - 1,
@@ -95,24 +135,38 @@ export default function HeroSection() {
       unsubscribe();
       window.removeEventListener('resize', handleResize);
     };
-  }, [images, imagesLoaded, scrollYProgress]);
+  }, [images, imagesLoaded, scrollYProgress, isMobile]);
 
   return (
     <section 
       id="home" 
       ref={containerRef} 
       className="relative w-full bg-black h-[100vh] bg-cover bg-center"
-      style={{ backgroundImage: "url('/frames/frame_0001.jpg')" }}
+      style={{ backgroundImage: !isMobile ? "url('/frames/frame_0001.jpg')" : "none" }}
     >
-      {/* NORMAL VIEWPORT */}
       <div className="relative w-full h-full overflow-hidden flex flex-col items-center justify-center bg-black/40">
         
-        {/* CANVAS BACKGROUND (Now active on all devices) */}
-        <canvas 
-          ref={canvasRef} 
-          className="absolute inset-0 w-full h-full z-0 filter grayscale contrast-[1.1] transition-opacity duration-300"
-          style={{ opacity: isReady ? 1 : 0 }}
-        />
+        {/* DESKTOP CANVAS BACKGROUND */}
+        {!isMobile && (
+          <canvas 
+            ref={canvasRef} 
+            className="absolute inset-0 w-full h-full z-0 filter grayscale contrast-[1.1] transition-opacity duration-300"
+            style={{ opacity: isReady ? 1 : 0 }}
+          />
+        )}
+
+        {/* MOBILE VIDEO BACKGROUND (Scrubbable) */}
+        {isMobile && (
+          <video 
+            ref={videoRef}
+            src="/videos/mobile_bg.mp4"
+            muted 
+            playsInline
+            preload="auto"
+            className="absolute inset-0 w-full h-full object-cover z-0 filter grayscale contrast-125 transition-opacity duration-300"
+            style={{ opacity: isReady ? 0.7 : 0 }}
+          />
+        )}
 
         {/* SUBTLE VIGNETTE */}
         <div className="absolute inset-0 z-0 pointer-events-none bg-[radial-gradient(circle,transparent_40%,rgba(0,0,0,0.5)_100%)]"></div>
