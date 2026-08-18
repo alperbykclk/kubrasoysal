@@ -32,19 +32,26 @@ export default function HeroSection() {
 
     const handleLoadedMetadata = () => {
       setIsReady(true);
-      video.play().then(() => video.pause()).catch(() => {});
+      if (isMobile) {
+        video.play().then(() => video.pause()).catch(() => {});
+      } else {
+        video.play().catch(() => {});
+      }
     };
 
     video.addEventListener('loadedmetadata', handleLoadedMetadata);
     if (video.readyState >= 1) handleLoadedMetadata();
 
-    const unsubscribe = scrollYProgress.onChange((latest) => {
-      if (video.readyState >= 1 && video.duration) {
-        requestAnimationFrame(() => {
-          video.currentTime = latest * video.duration;
-        });
-      }
-    });
+    let unsubscribe = () => {};
+    if (isMobile) {
+      unsubscribe = scrollYProgress.onChange((latest) => {
+        if (video.readyState >= 1 && video.duration) {
+          requestAnimationFrame(() => {
+            video.currentTime = latest * video.duration;
+          });
+        }
+      });
+    }
 
     return () => {
       video.removeEventListener('loadedmetadata', handleLoadedMetadata);
@@ -65,9 +72,10 @@ export default function HeroSection() {
       <video 
           ref={videoRef}
           key={isMobile ? 'mobile' : 'desktop'}
-          src={isMobile ? "/videos/mobile_bg.mp4" : "/videos/desktop_scrub_720p_lossless.mp4"}
+          src={isMobile ? "/videos/mobile_bg.mp4" : "/videos/hero_bg.mp4"}
           muted 
           playsInline
+          loop={!isMobile}
           preload="auto"
           className="absolute inset-0 w-full h-full object-cover z-0 filter grayscale contrast-[1.1] transition-opacity duration-300"
           style={{ opacity: isReady ? 1 : 0 }}
