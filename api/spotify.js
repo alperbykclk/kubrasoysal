@@ -43,6 +43,15 @@ export default async function handler(req) {
       }),
     ]);
 
+    if (req.url.includes('debug=1')) {
+       return new Response(JSON.stringify({
+          nowPlayingStatus: nowPlayingRes.status,
+          nowPlayingText: await nowPlayingRes.clone().text(),
+          recentStatus: recentlyPlayedRes.status,
+          recentText: await recentlyPlayedRes.clone().text()
+       }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+
     let isPlaying = false;
     let currentTrack = null;
 
