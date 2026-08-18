@@ -8,6 +8,7 @@ const refresh_token = process.env.SPOTIFY_REFRESH_TOKEN;
 
 const basic = btoa(`${client_id}:${client_secret}`);
 const NOW_PLAYING_ENDPOINT = `https://api.spotify.com/v1/me/player/currently-playing`;
+const RECENTLY_PLAYED_ENDPOINT = `https://api.spotify.com/v1/me/player/recently-played?limit=3`;
 const TOKEN_ENDPOINT = `https://accounts.spotify.com/api/token`;
 
 const getAccessToken = async () => {
@@ -30,49 +31,56 @@ export default async function handler(req) {
   try {
     const { access_token } = await getAccessToken();
 
-    const response = await fetch(NOW_PLAYING_ENDPOINT, {
-      headers: {
-        Authorization: `Bearer ${access_token}`,
-      },
-    });
+    // Fetch both in parallel
+    const [nowPlayingRes, recentlyPlayedRes] = await Promise.all([
+      fetch(NOW_PLAYING_ENDPOINT, {
+        headers: { Authorization: `Bearer ${access_token}` },
+      }),
+      fetch(RECENTLY_PLAYED_ENDPOINT, {
+        headers: { Authorization: `Bearer ${access_token}` },
+      }),
+    ]);
 
-    if (response.status === 204 || response.status > 400) {
-      return new Response(JSON.stringify({ isPlaying: false }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      });
+    let isPlaying = false;
+    let currentTrack = null;
+
+    if (nowPlayingRes.status === 200) {
+      const song = await nowPlayingRes.json();
+      if (song.item !== null) {
+        isPlaying = song.is_playing;
+        currentTrack = {
+          title: song.item.name,
+          artist: song.item.artists.map((_artist) => _artist.name).join(', '),
+          album: song.item.album.name,
+          albumImageUrl: song.item.album.images[0].url,
+          songUrl: song.item.external_urls.spotify,
+        };
+      }
     }
 
-    const song = await response.json();
-
-    if (song.item === null) {
-      return new Response(JSON.stringify({ isPlaying: false }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      });
+    let recentTracks = [];
+    if (recentlyPlayedRes.status === 200) {
+      const recent = await recentlyPlayedRes.json();
+      recentTracks = recent.items.map((track) => ({
+        title: track.track.name,
+        artist: track.track.artists.map((_artist) => _artist.name).join(', '),
+        albumImageUrl: track.track.album.images[0].url,
+        songUrl: track.track.external_urls.spotify,
+      }));
     }
-
-    const isPlaying = song.is_playing;
-    const title = song.item.name;
-    const artist = song.item.artists.map((_artist) => _artist.name).join(', ');
-    const album = song.item.album.name;
-    const albumImageUrl = song.item.album.images[0].url;
-    const songUrl = song.item.external_urls.spotify;
 
     return new Response(
       JSON.stringify({
-        album,
-        albumImageUrl,
-        artist,
         isPlaying,
-        songUrl,
-        title,
+        currentTrack,
+        recentTracks,
       }),
       {
         status: 200,
         headers: {
           'Content-Type': 'application/json',
-          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=30',
+          // Only cache for 5 seconds so it updates almost instantly on refresh/polling
+          'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=10',
         },
       }
     );

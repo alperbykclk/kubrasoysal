@@ -18,18 +18,20 @@ export default function SpotifyWidget() {
     };
 
     fetchSpotify();
-    // Refresh every 30 seconds
-    const interval = setInterval(fetchSpotify, 30000);
+    // Refresh every 5 seconds for near-instant updates
+    const interval = setInterval(fetchSpotify, 5000);
     return () => clearInterval(interval);
   }, []);
 
-  if (loading || !data || !data.isPlaying) {
+  if (loading || !data || !data.isPlaying || !data.currentTrack) {
     return null; // Don't show anything if not playing or loading
   }
 
+  const track = data.currentTrack;
+
   return (
     <a 
-      href={data.songUrl}
+      href={track.songUrl}
       target="_blank"
       rel="noopener noreferrer"
       className="fixed bottom-6 left-6 z-50 flex items-center gap-3 bg-black/80 backdrop-blur-md border border-white/10 px-4 py-2 rounded-full hover:bg-black transition-colors duration-300 group shadow-2xl"
@@ -44,17 +46,17 @@ export default function SpotifyWidget() {
           Şu An Dinliyor
         </p>
         <p className="text-sm font-semibold text-white truncate leading-tight group-hover:text-green-400 transition-colors">
-          {data.title}
+          {track.title}
         </p>
         <p className="text-xs text-gray-300 truncate leading-tight">
-          {data.artist}
+          {track.artist}
         </p>
       </div>
 
-      {data.albumImageUrl && (
+      {track.albumImageUrl && (
         <img 
-          src={data.albumImageUrl} 
-          alt={data.album} 
+          src={track.albumImageUrl} 
+          alt={track.album} 
           className="w-10 h-10 rounded-full ml-2 border border-white/20 group-hover:scale-110 transition-transform duration-300"
         />
       )}

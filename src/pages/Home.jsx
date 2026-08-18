@@ -1,5 +1,6 @@
 import HeroSection from '../components/sections/HeroSection';
 import SetsSection from '../components/sections/SetsSection';
+import SpotifySection from '../components/SpotifySection';
 import MusicSection from '../components/sections/MusicSection';
 import TourSection from '../components/sections/TourSection';
 import MediaSection from '../components/sections/MediaSection';
@@ -11,6 +12,7 @@ export default function Home() {
     <div className="bg-black w-full overflow-hidden">
       <HeroSection />
       <SetsSection />
+      <SpotifySection />
       <MusicSection />
       <TourSection />
       <MediaSection />
