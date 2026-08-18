@@ -64,8 +64,8 @@ export default function HeroSection() {
       {/* DESKTOP/MOBILE VIDEO BACKGROUND */}
       <video 
           ref={videoRef}
-          key={isMobile ? 'mobile' : 'desktop'}
-          src={isMobile ? "/videos/mobile_bg.mp4" : "/videos/desktop_bg.mp4"}
+          key="hero-video"
+          src="/videos/hero_bg.mp4"
           muted 
           playsInline
           preload="auto"
