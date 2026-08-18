@@ -154,6 +154,16 @@ export const CMSProvider = ({ children }) => {
   };
 
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+        <div className="text-white/50 text-xs font-bold uppercase tracking-widest animate-pulse">
+          Loading Data...
+        </div>
+      </div>
+    );
+  }
+
   return (
     <CMSContext.Provider value={{ data, updateSection }}>
       {children}
