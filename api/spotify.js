@@ -1,3 +1,5 @@
+export const config = { runtime: 'edge' };
+
 
 
 const client_id = process.env.SPOTIFY_CLIENT_ID;
