@@ -167,6 +167,17 @@ export default function ContactEditor() {
           <textarea value={contact.epkText || ''} onChange={(e) => handleChange('epkText', e.target.value)} className={`${inputCls} h-24`} />
         </div>
 
+        <div className="md:col-span-2">
+          <label className="text-[10px] uppercase tracking-widest text-gray-500 mb-1 block">Presskit / ZIP Download Link (Google Drive / WeTransfer)</label>
+          <input 
+            value={contact.presskitUrl || ''} 
+            onChange={(e) => handleChange('presskitUrl', e.target.value)} 
+            placeholder="https://drive.google.com/..." 
+            className={inputCls} 
+          />
+          <p className="text-[10px] text-gray-500 mt-1">Sitenin çökmesini engellemek için ZIP dosyalarınızı Google Drive'a yükleyip paylaşım linkini buraya yapıştırın. Sitedeki "Download Presskit" butonuna tıklandığında doğrudan bu link açılacaktır.</p>
+        </div>
+
         {/* TECH RIDER IMAGE */}
         <div className="md:col-span-2">
           <label className="text-[10px] uppercase tracking-widest text-gray-500 mb-2 block">Equipment & Stage Plot Image</label>

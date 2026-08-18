@@ -26,6 +26,7 @@ const defaultData = {
     epkTitle: "Electronic Press Kit",
     epkText: "Access the official Tech Rider, stage plot, and comprehensive list of past venues and residencies for promoters and booking agents.",
     epkButton: "View EPK & Tech Rider",
+    presskitUrl: "",
     techRiderImage: "",
     gigs: [
       "KLEIN PHONIX / ISTANBUL", "HEMINGWAY'S / BOSNIA", "MAMA SHELTER / SERBIA", "SPASS BELGRADE / SERBIA",
