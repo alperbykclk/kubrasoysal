@@ -30,11 +30,9 @@ export default function SpotifyWidget() {
   const track = data.currentTrack;
 
   return (
-    <a 
-      href={track.songUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="fixed bottom-6 left-6 z-50 flex items-center gap-3 bg-black/80 backdrop-blur-md border border-white/10 px-4 py-2 rounded-full hover:bg-black transition-colors duration-300 group shadow-2xl"
+    <button 
+      onClick={() => document.getElementById('spotify-section')?.scrollIntoView({ behavior: 'smooth' })}
+      className="fixed bottom-6 left-6 z-50 flex items-center gap-3 bg-black/80 backdrop-blur-md border border-white/10 px-4 py-2 rounded-full hover:bg-black transition-colors duration-300 group shadow-2xl text-left"
     >
       <div className="relative flex items-center justify-center">
         <div className="absolute inset-0 bg-green-500 rounded-full animate-ping opacity-75"></div>
@@ -60,6 +58,6 @@ export default function SpotifyWidget() {
           className="w-10 h-10 rounded-full ml-2 border border-white/20 group-hover:scale-110 transition-transform duration-300"
         />
       )}
-    </a>
+    </button>
   );
 }

@@ -71,7 +71,7 @@ export default function SpotifySection() {
   const smallTracks = isLive ? displayRecent.slice(0, 3) : displayRecent.slice(1, 4);
 
   return (
-    <section className="w-full bg-[#0a0a0a] py-16 px-4 border-t border-white/5 relative overflow-hidden">
+    <section id="spotify-section" className="w-full bg-[#0a0a0a] py-16 px-4 border-t border-white/5 relative overflow-hidden">
       {/* Decorative gradient */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[200px] bg-green-500/5 blur-[100px] pointer-events-none" />
 

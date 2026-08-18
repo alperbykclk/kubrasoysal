@@ -1,38 +1,42 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AdminDashboard from './admin/AdminDashboard';
 import { motion } from 'framer-motion';
+import { auth } from '../lib/firebase';
+import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
 
 export default function Admin() {
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    localStorage.getItem('ks_admin_auth') === 'true'
-  );
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsAuthenticated(!!user);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
   const handleLogin = async (e) => {
     e.preventDefault();
-    
-    // Hash the input password to hide it from source code
-    const encoder = new TextEncoder();
-    const data = encoder.encode(password);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-
-    // Hash matches "Kubra*2026"
-    if (hashHex === '15f2056672faebb89f994541f0171f85aa737fc8b67dfb2459906d15c837c194') { 
-      localStorage.setItem('ks_admin_auth', 'true');
-      setIsAuthenticated(true);
-    } else {
-      setError('Hatalı Şifre');
+    try {
+      await signInWithEmailAndPassword(auth, 'admin@kubrasoysal.com', password);
+    } catch (err) {
+      setError('Hatalı Şifre veya Erişim Engellendi');
     }
   };
 
+  const handleLogout = async () => {
+    await signOut(auth);
+  };
+
+  if (loading) {
+    return <div className="min-h-screen bg-black flex items-center justify-center">Loading...</div>;
+  }
+
   if (isAuthenticated) {
-    return <AdminDashboard onLogout={() => {
-      localStorage.removeItem('ks_admin_auth');
-      setIsAuthenticated(false);
-    }} />;
+    return <AdminDashboard onLogout={handleLogout} />;
   }
 
   return (
@@ -59,8 +63,11 @@ export default function Admin() {
           {error && <p className="text-red-500 text-xs mt-2 uppercase tracking-widest">{error}</p>}
         </div>
 
-        <button type="submit" className="w-full bg-white text-black font-bold uppercase tracking-widest py-4 hover:bg-gray-200 transition-colors">
-          Login
+        <button 
+          type="submit"
+          className="w-full bg-white text-black font-bold uppercase tracking-widest py-4 hover:bg-gray-200 transition-colors"
+        >
+          Access Dashboard
         </button>
       </motion.form>
     </div>
