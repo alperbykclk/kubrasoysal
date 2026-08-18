@@ -9,13 +9,22 @@ export default function Admin() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (password === 'admin123' || password === 'kubra') { 
+    
+    // Hash the input password to hide it from source code
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+    // Hash matches "Kubra*2026"
+    if (hashHex === '15f2056672faebb89f994541f0171f85aa737fc8b67dfb2459906d15c837c194') { 
       localStorage.setItem('ks_admin_auth', 'true');
       setIsAuthenticated(true);
     } else {
-      setError('Invalid credentials');
+      setError('Hatalı Şifre');
     }
   };
 
