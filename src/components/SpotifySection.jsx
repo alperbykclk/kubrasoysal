@@ -89,15 +89,7 @@ export default function SpotifySection() {
      offlineTrack = localHistory[0];
   }
 
-  // Create fallbacks from the Music section in CMS
-  const musicTracks = (cmsData?.music || []).map(m => ({
-     title: m.title,
-     artist: m.type || "KÜBRA SOYSAL",
-     albumImageUrl: m.image,
-     songUrl: m.link
-  }));
-
-  const fallbackTrack = musicTracks.length > 0 ? musicTracks[0] : {
+  const fallbackTrack = {
      title: "KÜBRA SOYSAL",
      artist: "Spotify Collection",
      albumImageUrl: "https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg",
@@ -109,21 +101,12 @@ export default function SpotifySection() {
   // If playing live, show first 3. If offline, bigTrack takes displayRecent[0], so show displayRecent[1] to [3]
   let smallTracks = isLive ? displayRecent.slice(0, 3) : displayRecent.slice(1, 4);
 
-  // If we don't have enough small tracks, pad them with fallbacks so the UI doesn't break
-  if (smallTracks.length < 3) {
-      const needed = 3 - smallTracks.length;
-      // Use other tracks from the music catalog to pad
-      const paddingTracks = musicTracks.slice(1, 1 + needed);
-      
-      smallTracks = [...smallTracks, ...paddingTracks];
-      
-      // If still not 3 (e.g., less than 4 music tracks total), pad with generic
-      while (smallTracks.length < 3) {
-         smallTracks.push({ 
-            ...fallbackTrack, 
-            title: `Track ${smallTracks.length + 1}` 
-         });
-      }
+  // If we don't have enough small tracks, pad them with generic fallbacks
+  while (smallTracks.length < 3) {
+      smallTracks.push({ 
+          ...fallbackTrack, 
+          title: `Track ${smallTracks.length + 1}` 
+      });
   }
 
   return (

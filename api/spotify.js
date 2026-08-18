@@ -1,6 +1,4 @@
-export const config = {
-  runtime: 'edge',
-};
+
 
 const client_id = process.env.SPOTIFY_CLIENT_ID;
 const client_secret = process.env.SPOTIFY_CLIENT_SECRET;
@@ -27,10 +25,24 @@ const getAccessToken = async () => {
   return response.json();
 };
 
-let globalCache = null;
+let cachedData = null;
+let lastFetchTime = 0;
+const CACHE_TTL_MS = 10000; // 10 seconds
 
 export default async function handler(req) {
   try {
+    const now = Date.now();
+    // Return cached data if within TTL
+    if (cachedData && (now - lastFetchTime < CACHE_TTL_MS)) {
+       return new Response(JSON.stringify(cachedData), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30',
+        },
+      });
+    }
+
     const { access_token } = await getAccessToken();
 
     // Fetch both in parallel
@@ -42,15 +54,6 @@ export default async function handler(req) {
         headers: { Authorization: `Bearer ${access_token}` },
       }),
     ]);
-
-    if (req.url.includes('debug=1')) {
-       return new Response(JSON.stringify({
-          nowPlayingStatus: nowPlayingRes.status,
-          nowPlayingText: await nowPlayingRes.clone().text(),
-          recentStatus: recentlyPlayedRes.status,
-          recentText: await recentlyPlayedRes.clone().text()
-       }), { status: 200, headers: { 'Content-Type': 'application/json' } });
-    }
 
     let isPlaying = false;
     let currentTrack = null;
@@ -79,41 +82,26 @@ export default async function handler(req) {
         songUrl: track.track.external_urls.spotify,
         playedAt: track.played_at,
       }));
+    } else if (cachedData && cachedData.recentTracks) {
+      // If we hit rate limit (429) or other error, fallback to our old cache
+      recentTracks = cachedData.recentTracks;
     }
+
+    const newData = { isPlaying, currentTrack, recentTracks };
     
-    // If we have live data, cache it globally
+    // Update cache
     if (isPlaying || recentTracks.length > 0) {
-      globalCache = { isPlaying, currentTrack, recentTracks };
-    } 
-    // If we have NO data but we have a cache, use the cache (pretend offline but show last known)
-    else if (!isPlaying && recentTracks.length === 0 && globalCache) {
-      return new Response(JSON.stringify({
-         isPlaying: false, // Force offline state
-         currentTrack: null,
-         recentTracks: globalCache.recentTracks.length > 0 
-           ? globalCache.recentTracks 
-           : (globalCache.currentTrack ? [globalCache.currentTrack] : [])
-      }), {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=10',
-        },
-      });
+      cachedData = newData;
+      lastFetchTime = now;
     }
 
     return new Response(
-      JSON.stringify({
-        isPlaying,
-        currentTrack,
-        recentTracks,
-      }),
+      JSON.stringify(newData),
       {
         status: 200,
         headers: {
           'Content-Type': 'application/json',
-          // Only cache for 5 seconds so it updates almost instantly on refresh/polling
-          'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=10',
+          'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=30',
         },
       }
     );

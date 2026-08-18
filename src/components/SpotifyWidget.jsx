@@ -39,14 +39,7 @@ export default function SpotifyWidget() {
      }
   }
 
-  const musicTracks = (cmsData?.music || []).map(m => ({
-     title: m.title,
-     artist: m.type || "KÜBRA SOYSAL",
-     albumImageUrl: m.image,
-     songUrl: m.link
-  }));
-
-  const fallbackTrack = musicTracks.length > 0 ? musicTracks[0] : {
+  const fallbackTrack = {
     title: "KÜBRA SOYSAL",
     artist: "Listen on Spotify",
     albumImageUrl: "https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg",
