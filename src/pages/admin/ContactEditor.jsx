@@ -10,8 +10,11 @@ export default function ContactEditor() {
     subtitle: "For worldwide bookings, press inquiries, and collaborations.",
     emailLabel: "Booking & Press Email",
     bookingEmail: "kubrasoysal9@gmail.com",
+    telephoneLabel: "Contact Person",
     telephone: "+90 553 687 8313",
+    basedInLabel: "Based In",
     basedIn: "TURKIYE / ISTANBUL",
+    socialsLabel: "Socials",
     socials: [
       { name: "Instagram", url: "https://instagram.com/kubrasoysal" },
       { name: "SoundCloud", url: "https://soundcloud.com/kubrasoysal" }
@@ -109,20 +112,33 @@ export default function ContactEditor() {
         </div>
 
         <div>
-          <label className="text-[10px] uppercase tracking-widest text-gray-500 mb-1 block">Telephone</label>
+          <label className="text-[10px] uppercase tracking-widest text-gray-500 mb-1 block">Telephone Label</label>
+          <input value={contact.telephoneLabel || ''} onChange={(e) => handleChange('telephoneLabel', e.target.value)} className={inputCls} />
+        </div>
+
+        <div>
+          <label className="text-[10px] uppercase tracking-widest text-gray-500 mb-1 block">Telephone / Contact Value</label>
           <input value={contact.telephone || ''} onChange={(e) => handleChange('telephone', e.target.value)} className={inputCls} />
         </div>
 
         <div>
-          <label className="text-[10px] uppercase tracking-widest text-gray-500 mb-1 block">Based In</label>
+          <label className="text-[10px] uppercase tracking-widest text-gray-500 mb-1 block">Based In Label</label>
+          <input value={contact.basedInLabel || ''} onChange={(e) => handleChange('basedInLabel', e.target.value)} className={inputCls} />
+        </div>
+
+        <div>
+          <label className="text-[10px] uppercase tracking-widest text-gray-500 mb-1 block">Based In Value</label>
           <input value={contact.basedIn || ''} onChange={(e) => handleChange('basedIn', e.target.value)} className={inputCls} />
         </div>
 
         {/* DYNAMIC SOCIALS */}
         <div className="md:col-span-2 mt-2 pt-4 border-t border-white/10">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-heading font-black uppercase">Social Links</h3>
-            <button onClick={addSocial} className="text-xs px-4 py-2 border border-white/30 text-white hover:bg-white hover:text-black transition-colors uppercase tracking-widest font-bold">
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
+            <div className="flex-1 max-w-sm">
+              <label className="text-[10px] uppercase tracking-widest text-gray-500 mb-1 block">Socials Label</label>
+              <input value={contact.socialsLabel || ''} onChange={(e) => handleChange('socialsLabel', e.target.value)} className={inputCls} />
+            </div>
+            <button onClick={addSocial} className="text-xs px-4 py-3 md:py-2 border border-white/30 text-white hover:bg-white hover:text-black transition-colors uppercase tracking-widest font-bold self-end md:self-auto">
               + Add Link
             </button>
           </div>

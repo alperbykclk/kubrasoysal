@@ -9,8 +9,11 @@ export default function ContactSection() {
     subtitle: "For worldwide bookings, press inquiries, and collaborations.",
     emailLabel: "Booking & Press Email",
     bookingEmail: "kubrasoysal9@gmail.com",
+    telephoneLabel: "Contact Person",
     telephone: "+90 553 687 8313",
+    basedInLabel: "Based In",
     basedIn: "TURKIYE / ISTANBUL",
+    socialsLabel: "Socials",
     socials: [
       { name: "Instagram", url: "https://instagram.com/kubrasoysal" },
       { name: "SoundCloud", url: "https://soundcloud.com/kubrasoysal" }
@@ -72,15 +75,15 @@ export default function ContactSection() {
                 <a href={`mailto:${contact.bookingEmail}`} className="text-lg md:text-xl text-white hover:text-gray-300 transition-colors font-heading tracking-wide uppercase">{contact.bookingEmail}</a>
               </div>
               <div>
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Telephone</p>
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">{contact.telephoneLabel}</p>
                 <a href={`tel:${contact.telephone.replace(/[^0-9+]/g, '')}`} className="text-lg md:text-xl text-white hover:text-gray-300 transition-colors font-heading tracking-wide">{contact.telephone}</a>
               </div>
               <div>
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Based In</p>
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">{contact.basedInLabel}</p>
                 <p className="text-lg md:text-xl text-white font-heading tracking-wide uppercase">{contact.basedIn}</p>
               </div>
               <div>
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Socials</p>
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">{contact.socialsLabel}</p>
                 <div className="flex flex-wrap gap-6 mt-2">
                   {socials.map((s, i) => (
                     <a key={i} href={s.url} target="_blank" rel="noreferrer" className="text-white hover:text-gray-400 transition-colors uppercase tracking-widest text-sm font-bold">{s.name}</a>
