@@ -4,7 +4,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function SpotifySection() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [localHistory, setLocalHistory] = useState([]);
+  // Initialize from localStorage safely
+  const [localHistory, setLocalHistory] = useState(() => {
+    if (typeof window !== 'undefined') {
+       const saved = localStorage.getItem('spotify_local_history');
+       return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
   
   // Use a ref to access the latest data in the interval callback without triggering re-renders
   const dataRef = useRef(null);
@@ -24,11 +31,18 @@ export default function SpotifySection() {
               
            if (trackChanged) {
               setLocalHistory(hist => {
-                 // Prepend old track, ensuring it's unique
-                 const newHist = [prevData.currentTrack, ...hist.filter(t => t.songUrl !== prevData.currentTrack.songUrl)];
-                 return newHist.slice(0, 4);
+                 const newHist = [prevData.currentTrack, ...hist.filter(t => t.songUrl !== prevData.currentTrack.songUrl)].slice(0, 4);
+                 localStorage.setItem('spotify_local_history', JSON.stringify(newHist));
+                 return newHist;
               });
            }
+        } else if (json.isPlaying && json.currentTrack) {
+           // Also save the current track immediately if we don't have history yet
+           setLocalHistory(hist => {
+              const newHist = [json.currentTrack, ...hist.filter(t => t.songUrl !== json.currentTrack.songUrl)].slice(0, 4);
+              localStorage.setItem('spotify_local_history', JSON.stringify(newHist));
+              return newHist;
+           });
         }
         
         dataRef.current = json;
@@ -66,7 +80,12 @@ export default function SpotifySection() {
 
   const isLive = data.isPlaying && data.currentTrack;
   
-  // If offline and no recent tracks available, use a fallback
+  // If offline and no recent tracks available, try localStorage, then fallback
+  let offlineTrack = displayRecent[0];
+  if (!offlineTrack && localHistory.length > 0) {
+     offlineTrack = localHistory[0];
+  }
+
   const fallbackTrack = {
      title: "KÜBRA SOYSAL",
      artist: "Spotify Collection",
@@ -74,7 +93,7 @@ export default function SpotifySection() {
      songUrl: "https://open.spotify.com/search/Kübra%20Soysal"
   };
 
-  const bigTrack = isLive ? data.currentTrack : (displayRecent[0] || fallbackTrack);
+  const bigTrack = isLive ? data.currentTrack : (offlineTrack || fallbackTrack);
   
   // If playing live, show first 3. If offline, bigTrack takes displayRecent[0], so show displayRecent[1] to [3]
   const smallTracks = isLive ? displayRecent.slice(0, 3) : displayRecent.slice(1, 4);

@@ -26,14 +26,25 @@ export default function SpotifyWidget() {
   if (loading || !data) return null;
 
   const isLive = data.isPlaying && data.currentTrack;
-  const track = isLive 
-    ? data.currentTrack 
-    : (data.recentTracks?.[0] || {
-        title: "KÜBRA SOYSAL",
-        artist: "Listen on Spotify",
-        albumImageUrl: "https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg",
-        songUrl: "https://open.spotify.com/search/Kübra%20Soysal"
-      });
+  
+  // Try to get track from API, then localStorage, then hardcoded fallback
+  let offlineTrack = data.recentTracks?.[0];
+  if (!offlineTrack && typeof window !== 'undefined') {
+     const savedStr = localStorage.getItem('spotify_local_history');
+     if (savedStr) {
+        const savedHist = JSON.parse(savedStr);
+        if (savedHist && savedHist.length > 0) offlineTrack = savedHist[0];
+     }
+  }
+
+  const fallbackTrack = {
+    title: "KÜBRA SOYSAL",
+    artist: "Listen on Spotify",
+    albumImageUrl: "https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg",
+    songUrl: "https://open.spotify.com/search/Kübra%20Soysal"
+  };
+
+  const track = isLive ? data.currentTrack : (offlineTrack || fallbackTrack);
 
   return (
     <button 
