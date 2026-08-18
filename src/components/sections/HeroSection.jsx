@@ -65,7 +65,7 @@ export default function HeroSection() {
       <video 
           ref={videoRef}
           key={isMobile ? 'mobile' : 'desktop'}
-          src={isMobile ? "/videos/mobile_bg.mp4" : "/videos/hero_bg.mp4"}
+          src={isMobile ? "/videos/mobile_bg.mp4" : "/videos/desktop_scrub_720p_lossless.mp4"}
           muted 
           playsInline
           preload="auto"
@@ -80,7 +80,7 @@ export default function HeroSection() {
       {/* FOREGROUND CONTENT */}
       <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 w-full h-full pt-40 pointer-events-none">
         <h1 className="text-5xl sm:text-6xl md:text-[7rem] leading-none font-heading font-black tracking-tight text-white mb-4 whitespace-nowrap drop-shadow-xl pointer-events-auto mix-blend-difference">
-          KÃœBRA SOYSAL
+          KÜBRA SOYSAL
         </h1>
         
         <a 
