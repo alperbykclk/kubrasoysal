@@ -47,6 +47,21 @@ export default function SpotifySection() {
               return newHist;
            });
         }
+
+        // If the API gave us real recentTracks, let's also cache them locally so they survive offline
+        if (json.recentTracks && json.recentTracks.length > 0) {
+           setLocalHistory(hist => {
+              const combined = [...hist];
+              for (const rt of json.recentTracks) {
+                 if (!combined.find(t => t.songUrl === rt.songUrl)) {
+                    combined.push(rt);
+                 }
+              }
+              const newHist = combined.slice(0, 4);
+              localStorage.setItem('spotify_local_history', JSON.stringify(newHist));
+              return newHist;
+           });
+        }
         
         dataRef.current = json;
         setData(json);

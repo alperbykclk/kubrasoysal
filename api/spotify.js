@@ -82,8 +82,10 @@ export default async function handler(req) {
         songUrl: track.track.external_urls.spotify,
         playedAt: track.played_at,
       }));
-    } else if (cachedData && cachedData.recentTracks) {
-      // If we hit rate limit (429) or other error, fallback to our old cache
+    }
+    
+    // If we hit rate limit (429), or if API returns an empty list (0 tracks), fallback to our memory cache
+    if (recentTracks.length === 0 && cachedData && cachedData.recentTracks) {
       recentTracks = cachedData.recentTracks;
     }
 
