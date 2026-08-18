@@ -111,27 +111,37 @@ export const CMSProvider = ({ children }) => {
 
   // Load from Firestore on mount
   useEffect(() => {
+    let unsubscribe = () => {};
+
     const loadData = async () => {
       try {
         const { db } = await import('../lib/firebase.js');
-        const { doc, getDoc } = await import('firebase/firestore');
+        const { doc, onSnapshot } = await import('firebase/firestore');
         const docRef = doc(db, 'cms', 'site');
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const firestoreData = docSnap.data();
-          setData({ ...defaultData, ...firestoreData });
-        }
+        
+        unsubscribe = onSnapshot(docRef, (docSnap) => {
+          if (docSnap.exists()) {
+            const firestoreData = docSnap.data();
+            setData({ ...defaultData, ...firestoreData });
+          }
+          setLoading(false);
+        }, (err) => {
+          console.warn('Firebase snapshot failed:', err);
+          setLoading(false);
+        });
       } catch (err) {
         console.warn('Firebase load failed, using defaults:', err);
-      } finally {
         setLoading(false);
       }
     };
+
     loadData();
+    return () => unsubscribe();
   }, []);
 
   const updateSection = async (section, newData) => {
     const updated = { ...data, [section]: newData };
+    // Optimistically update local state so UI feels fast
     setData(updated);
     try {
       const { db } = await import('../lib/firebase.js');
@@ -139,6 +149,7 @@ export const CMSProvider = ({ children }) => {
       await setDoc(doc(db, 'cms', 'site'), updated);
     } catch (err) {
       console.error('Firebase save failed:', err);
+      alert('Sisteme kaydedilirken bir hata oluştu! Lütfen sayfayı yenileyip tekrar giriş yapın.');
     }
   };
 
