@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import LoadingScreen from '../components/LoadingScreen';
 
 const CMSContext = createContext();
 
@@ -155,13 +156,7 @@ export const CMSProvider = ({ children }) => {
 
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
-        <div className="text-white/50 text-xs font-bold uppercase tracking-widest animate-pulse">
-          Loading Data...
-        </div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   return (
