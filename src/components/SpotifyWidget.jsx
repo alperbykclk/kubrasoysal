@@ -43,7 +43,7 @@ export default function SpotifyWidget() {
       
       <div className="flex flex-col max-w-[150px] sm:max-w-[200px]">
         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-tight">
-          Şu An Dinliyor
+          NOW PLAYING
         </p>
         <p className="text-sm font-semibold text-white truncate leading-tight group-hover:text-green-400 transition-colors">
           {track.title}

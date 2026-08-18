@@ -81,7 +81,7 @@ export default function SpotifySection() {
             <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.54.659.3 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.84.24 1.2zM19.32 9.6c-4.2-2.461-11.28-2.7-15.48-1.5-.6.18-1.2-.181-1.38-.781-.18-.6.18-1.2.78-1.38 4.8-1.321 12.6-.96 17.52 1.92.54.3.72.96.42 1.5-.24.6-.9.78-1.44.48z" />
           </svg>
           <h2 className="text-2xl md:text-4xl font-heading font-black text-white uppercase tracking-widest">
-            Kübra's Rotation
+            KÜBRA'S ROTATION
           </h2>
         </div>
 
@@ -103,16 +103,16 @@ export default function SpotifySection() {
                   <img 
                     src={bigTrack.albumImageUrl} 
                     alt={bigTrack.album} 
-                    className={`w-28 h-28 md:w-36 md:h-36 rounded-xl shadow-2xl transition-transform duration-500 object-cover ${!isLive && 'grayscale group-hover:grayscale-0'}`} 
+                    className="w-28 h-28 md:w-36 md:h-36 rounded-xl shadow-2xl transition-transform duration-500 object-cover" 
                   />
                   {isLive ? (
                     <div className="absolute -top-3 -right-3 flex items-center gap-2 bg-green-500 text-black px-2 py-1 rounded-full font-bold text-[10px] uppercase tracking-wider animate-pulse shadow-lg">
                       <div className="w-1.5 h-1.5 bg-black rounded-full animate-ping"></div>
-                      Canlı
+                      LIVE
                     </div>
                   ) : (
                     <div className="absolute -top-3 -right-3 flex items-center gap-2 bg-gray-600 text-white px-2 py-1 rounded-full font-bold text-[10px] uppercase tracking-wider shadow-lg">
-                      Geçmiş
+                      RECENT
                     </div>
                   )}
                 </div>
@@ -122,8 +122,8 @@ export default function SpotifySection() {
                   </p>
                   <h3 className="text-xl md:text-2xl font-bold text-white mb-1 leading-tight group-hover:text-green-400 transition-colors">{bigTrack.title}</h3>
                   <p className="text-sm md:text-base text-gray-300 mb-3">{bigTrack.artist}</p>
-                  <span className="inline-block border border-white/20 px-4 py-1.5 rounded-full text-xs font-medium hover:bg-white hover:text-black transition-colors duration-300">
-                    Spotify'da Aç
+                  <span className="inline-block border border-white/20 px-4 py-1.5 rounded-full text-xs font-medium hover:bg-white hover:text-black transition-colors duration-300 uppercase tracking-wider">
+                    LISTEN ON SPOTIFY
                   </span>
                 </div>
               </motion.a>
@@ -152,7 +152,7 @@ export default function SpotifySection() {
                   className="w-16 h-16 rounded-md shadow-lg group-hover:scale-105 transition-all duration-300 object-cover" 
                 />
                 <div className="flex-1 text-left">
-                  <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-0.5">Son Dinlenen</p>
+                  <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-0.5">RECENTLY PLAYED</p>
                   <h4 className="text-sm font-bold text-white mb-0.5 line-clamp-1 group-hover:text-green-400 transition-colors">{track.title}</h4>
                   <p className="text-xs text-gray-400 line-clamp-1">{track.artist}</p>
                 </div>
