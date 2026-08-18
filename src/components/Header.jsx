@@ -144,16 +144,40 @@ export default function Header() {
             </nav>
             
             <div className="relative z-10 py-4 md:py-6 flex flex-wrap justify-center gap-6 md:gap-10 border-t border-white/5">
-               {socials.map((s, i) => (
-                 <a key={i} href={s.url} target="_blank" rel="noreferrer" className="text-gray-500 hover:text-white transition-colors font-heading font-bold uppercase tracking-widest text-[10px] md:text-xs">
-                   {s.name}
-                 </a>
-               ))}
-            </div>
+               {socials.map((s, i) => {
+                 const nameStr = (s.name || '').toLowerCase();
+                 let Icon = null;
+                 if (nameStr.includes('instagram')) {
+                   Icon = <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>;
+                 } else if (nameStr.includes('soundcloud')) {
+                   Icon = <svg width="24" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2.5 12h-1m3-2v4m3-5v6m3-8v10m3-8v6m3-5v4m3-3v2"></path><path d="M14 15h6a3 3 0 0 0 0-6h-1.5a5 5 0 0 0-8.5 3"></path></svg>;
+                 } else if (nameStr.includes('youtube')) {
+                   Icon = <svg width="22" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33 2.78 2.78 0 0 0 1.94 2c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.33 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>;
+                 } else if (nameStr.includes('spotify')) {
+                   Icon = <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.69 14.4c-.19.31-.6.41-.9.23-2.47-1.51-5.58-1.85-9.25-1.02-.35.08-.69-.14-.77-.49-.08-.35.14-.69.49-.77 4.02-.9 7.46-.51 10.21 1.17.29.18.39.58.22.88zm1.26-2.82c-.24.38-.73.5-1.11.26-2.84-1.74-7.18-2.25-9.98-1.23-.42.15-.88-.07-1.03-.49-.15-.42.07-.88.49-1.03 3.25-1.19 8.05-.62 11.37 1.41.37.23.49.72.26 1.08zm.13-2.95C14.65 8.6 8.5 8.4 4.96 9.47c-.52.16-1.06-.14-1.22-.65-.16-.52.14-1.06.65-1.22 4.07-1.23 10.86-1.01 14.93 1.41.47.28.62.9.34 1.37-.28.47-.9.62-1.37.34z"/></svg>;
+                 } else if (nameStr.includes('facebook')) {
+                   Icon = <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>;
+                 } else if (nameStr.includes('twitter') || nameStr === 'x') {
+                   Icon = <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg>;
+                 } else {
+                   // Fallback for custom labels
+                   return (
+                     <a key={i} href={s.url} target="_blank" rel="noreferrer" className="text-gray-500 hover:text-white transition-colors font-heading font-bold uppercase tracking-widest text-[10px] md:text-xs">
+                       {s.name}
+                     </a>
+                   );
+                 }
+
+                 return (
+                   <a key={i} href={s.url} target="_blank" rel="noreferrer" className="text-gray-500 hover:text-white transition-colors" title={s.name}>
+                     {Icon}
+                   </a>
+                 );
+               })}
+             </div>
           </motion.div>
         )}
       </AnimatePresence>
     </>
   );
 }
-
