@@ -27,6 +27,14 @@ export default function SpotifySection() {
     return null;
   }
 
+  // Determine what to show in the "Big" block
+  const isLive = data.isPlaying && data.currentTrack;
+  const bigTrack = isLive ? data.currentTrack : data.recentTracks[0];
+  
+  // Determine what to show in the small blocks below
+  // If playing live, show first 3 recent. If not playing live, show recent tracks 1 to 3 (since 0 is in the big block)
+  const smallTracks = isLive ? data.recentTracks.slice(0, 3) : data.recentTracks.slice(1, 4);
+
   return (
     <section className="w-full bg-[#0a0a0a] py-16 px-4 border-t border-white/5 relative overflow-hidden">
       {/* Decorative gradient */}
@@ -42,29 +50,37 @@ export default function SpotifySection() {
           </h2>
         </div>
 
-        {data.isPlaying && data.currentTrack && (
+        {bigTrack && (
           <div className="mb-10">
             <a 
-              href={data.currentTrack.songUrl} 
+              href={bigTrack.songUrl} 
               target="_blank" 
               rel="noopener noreferrer"
               className="flex flex-col md:flex-row items-center gap-6 bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-colors duration-500 group max-w-2xl mx-auto"
             >
               <div className="relative">
                 <img 
-                  src={data.currentTrack.albumImageUrl} 
-                  alt={data.currentTrack.album} 
-                  className="w-28 h-28 md:w-36 md:h-36 rounded-xl shadow-2xl group-hover:scale-105 transition-transform duration-500 object-cover" 
+                  src={bigTrack.albumImageUrl} 
+                  alt={bigTrack.album} 
+                  className={`w-28 h-28 md:w-36 md:h-36 rounded-xl shadow-2xl transition-transform duration-500 object-cover ${!isLive && 'grayscale group-hover:grayscale-0'}`} 
                 />
-                <div className="absolute -top-3 -right-3 flex items-center gap-2 bg-green-500 text-black px-2 py-1 rounded-full font-bold text-[10px] uppercase tracking-wider animate-pulse shadow-lg">
-                  <div className="w-1.5 h-1.5 bg-black rounded-full animate-ping"></div>
-                  Canlı
-                </div>
+                {isLive ? (
+                  <div className="absolute -top-3 -right-3 flex items-center gap-2 bg-green-500 text-black px-2 py-1 rounded-full font-bold text-[10px] uppercase tracking-wider animate-pulse shadow-lg">
+                    <div className="w-1.5 h-1.5 bg-black rounded-full animate-ping"></div>
+                    Canlı
+                  </div>
+                ) : (
+                  <div className="absolute -top-3 -right-3 flex items-center gap-2 bg-gray-600 text-white px-2 py-1 rounded-full font-bold text-[10px] uppercase tracking-wider shadow-lg">
+                    Geçmiş
+                  </div>
+                )}
               </div>
               <div className="flex-1 text-center md:text-left">
-                <p className="text-green-400 text-xs font-bold uppercase tracking-widest mb-1">NOW PLAYING</p>
-                <h3 className="text-xl md:text-2xl font-bold text-white mb-1 leading-tight">{data.currentTrack.title}</h3>
-                <p className="text-sm md:text-base text-gray-300 mb-3">{data.currentTrack.artist}</p>
+                <p className={`${isLive ? 'text-green-400' : 'text-gray-400'} text-xs font-bold uppercase tracking-widest mb-1`}>
+                  {isLive ? 'NOW PLAYING' : 'LAST LISTENED'}
+                </p>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-1 leading-tight group-hover:text-green-400 transition-colors">{bigTrack.title}</h3>
+                <p className="text-sm md:text-base text-gray-300 mb-3">{bigTrack.artist}</p>
                 <span className="inline-block border border-white/20 px-4 py-1.5 rounded-full text-xs font-medium hover:bg-white hover:text-black transition-colors duration-300">
                   Spotify'da Aç
                 </span>
@@ -75,7 +91,7 @@ export default function SpotifySection() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto">
           <AnimatePresence mode="popLayout">
-            {data.recentTracks.map((track) => (
+            {smallTracks.map((track) => (
               <motion.a 
                 layout
                 initial={{ opacity: 0, x: -50, scale: 0.9 }}
