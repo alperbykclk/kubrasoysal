@@ -27,6 +27,8 @@ const getAccessToken = async () => {
   return response.json();
 };
 
+let globalCache = null;
+
 export default async function handler(req) {
   try {
     const { access_token } = await getAccessToken();
@@ -68,6 +70,27 @@ export default async function handler(req) {
         songUrl: track.track.external_urls.spotify,
         playedAt: track.played_at,
       }));
+    }
+    
+    // If we have live data, cache it globally
+    if (isPlaying || recentTracks.length > 0) {
+      globalCache = { isPlaying, currentTrack, recentTracks };
+    } 
+    // If we have NO data but we have a cache, use the cache (pretend offline but show last known)
+    else if (!isPlaying && recentTracks.length === 0 && globalCache) {
+      return new Response(JSON.stringify({
+         isPlaying: false, // Force offline state
+         currentTrack: null,
+         recentTracks: globalCache.recentTracks.length > 0 
+           ? globalCache.recentTracks 
+           : (globalCache.currentTrack ? [globalCache.currentTrack] : [])
+      }), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=10',
+        },
+      });
     }
 
     return new Response(

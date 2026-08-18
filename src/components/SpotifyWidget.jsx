@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { useCMS } from '../context/CMSContext';
 
 export default function SpotifyWidget() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { data: cmsData } = useCMS();
 
   useEffect(() => {
     const fetchSpotify = async () => {
@@ -37,11 +39,18 @@ export default function SpotifyWidget() {
      }
   }
 
-  const fallbackTrack = {
+  const musicTracks = (cmsData?.music || []).map(m => ({
+     title: m.title,
+     artist: m.type || "KÜBRA SOYSAL",
+     albumImageUrl: m.image,
+     songUrl: m.link
+  }));
+
+  const fallbackTrack = musicTracks.length > 0 ? musicTracks[0] : {
     title: "KÜBRA SOYSAL",
     artist: "Listen on Spotify",
     albumImageUrl: "https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg",
-    songUrl: "https://open.spotify.com/search/Kübra%20Soysal"
+    songUrl: "https://open.spotify.com/search/K%C3%BCbra%20Soysal"
   };
 
   const track = isLive ? data.currentTrack : (offlineTrack || fallbackTrack);

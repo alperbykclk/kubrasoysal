@@ -1,9 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useCMS } from '../context/CMSContext';
 
 export default function SpotifySection() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { data: cmsData } = useCMS();
+
   // Initialize from localStorage safely
   const [localHistory, setLocalHistory] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -86,7 +89,15 @@ export default function SpotifySection() {
      offlineTrack = localHistory[0];
   }
 
-  const fallbackTrack = {
+  // Create fallbacks from the Music section in CMS
+  const musicTracks = (cmsData?.music || []).map(m => ({
+     title: m.title,
+     artist: m.type || "KÜBRA SOYSAL",
+     albumImageUrl: m.image,
+     songUrl: m.link
+  }));
+
+  const fallbackTrack = musicTracks.length > 0 ? musicTracks[0] : {
      title: "KÜBRA SOYSAL",
      artist: "Spotify Collection",
      albumImageUrl: "https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg",
@@ -99,14 +110,20 @@ export default function SpotifySection() {
   let smallTracks = isLive ? displayRecent.slice(0, 3) : displayRecent.slice(1, 4);
 
   // If we don't have enough small tracks, pad them with fallbacks so the UI doesn't break
-  if (smallTracks.length === 0) {
-     smallTracks = [
-        { ...fallbackTrack, title: "Latest Set 1" },
-        { ...fallbackTrack, title: "Latest Set 2" },
-        { ...fallbackTrack, title: "Latest Set 3" }
-     ];
-  } else while (smallTracks.length < 3) {
-     smallTracks.push({ ...fallbackTrack, title: `Track ${smallTracks.length + 1}` });
+  if (smallTracks.length < 3) {
+      const needed = 3 - smallTracks.length;
+      // Use other tracks from the music catalog to pad
+      const paddingTracks = musicTracks.slice(1, 1 + needed);
+      
+      smallTracks = [...smallTracks, ...paddingTracks];
+      
+      // If still not 3 (e.g., less than 4 music tracks total), pad with generic
+      while (smallTracks.length < 3) {
+         smallTracks.push({ 
+            ...fallbackTrack, 
+            title: `Track ${smallTracks.length + 1}` 
+         });
+      }
   }
 
   return (
