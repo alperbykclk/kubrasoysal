@@ -45,7 +45,7 @@ export default function SpotifySection() {
     return () => clearInterval(interval);
   }, []);
 
-  if (loading || !data || (!data.isPlaying && data.recentTracks.length === 0 && localHistory.length === 0)) {
+  if (loading || !data) {
     return null;
   }
 
@@ -65,7 +65,16 @@ export default function SpotifySection() {
   }
 
   const isLive = data.isPlaying && data.currentTrack;
-  const bigTrack = isLive ? data.currentTrack : (displayRecent[0] || null);
+  
+  // If offline and no recent tracks available, use a fallback
+  const fallbackTrack = {
+     title: "KÜBRA SOYSAL",
+     artist: "Spotify Collection",
+     albumImageUrl: "https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg",
+     songUrl: "https://open.spotify.com/search/Kübra%20Soysal"
+  };
+
+  const bigTrack = isLive ? data.currentTrack : (displayRecent[0] || fallbackTrack);
   
   // If playing live, show first 3. If offline, bigTrack takes displayRecent[0], so show displayRecent[1] to [3]
   const smallTracks = isLive ? displayRecent.slice(0, 3) : displayRecent.slice(1, 4);

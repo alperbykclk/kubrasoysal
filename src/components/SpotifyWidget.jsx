@@ -26,9 +26,14 @@ export default function SpotifyWidget() {
   if (loading || !data) return null;
 
   const isLive = data.isPlaying && data.currentTrack;
-  const track = isLive ? data.currentTrack : (data.recentTracks?.[0] || null);
-
-  if (!track) return null; // Only hide if absolutely no data is available
+  const track = isLive 
+    ? data.currentTrack 
+    : (data.recentTracks?.[0] || {
+        title: "KÜBRA SOYSAL",
+        artist: "Listen on Spotify",
+        albumImageUrl: "https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg",
+        songUrl: "https://open.spotify.com/search/Kübra%20Soysal"
+      });
 
   return (
     <button 
