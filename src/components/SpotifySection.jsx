@@ -90,13 +90,24 @@ export default function SpotifySection() {
      title: "KÜBRA SOYSAL",
      artist: "Spotify Collection",
      albumImageUrl: "https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg",
-     songUrl: "https://open.spotify.com/search/Kübra%20Soysal"
+     songUrl: "https://open.spotify.com/search/K%C3%BCbra%20Soysal"
   };
 
   const bigTrack = isLive ? data.currentTrack : (offlineTrack || fallbackTrack);
   
   // If playing live, show first 3. If offline, bigTrack takes displayRecent[0], so show displayRecent[1] to [3]
-  const smallTracks = isLive ? displayRecent.slice(0, 3) : displayRecent.slice(1, 4);
+  let smallTracks = isLive ? displayRecent.slice(0, 3) : displayRecent.slice(1, 4);
+
+  // If we don't have enough small tracks, pad them with fallbacks so the UI doesn't break
+  if (smallTracks.length === 0) {
+     smallTracks = [
+        { ...fallbackTrack, title: "Latest Set 1" },
+        { ...fallbackTrack, title: "Latest Set 2" },
+        { ...fallbackTrack, title: "Latest Set 3" }
+     ];
+  } else while (smallTracks.length < 3) {
+     smallTracks.push({ ...fallbackTrack, title: `Track ${smallTracks.length + 1}` });
+  }
 
   return (
     <section id="spotify-section" className="w-full bg-[#0a0a0a] py-16 px-4 border-t border-white/5 relative overflow-hidden">
