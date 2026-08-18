@@ -109,7 +109,19 @@ export default function ContactSection() {
               
               {contact.presskitUrl && (
                 <a 
-                  href={contact.presskitUrl}
+                  href={(() => {
+                    const url = contact.presskitUrl;
+                    try {
+                      const driveRegex = /\/file\/d\/([a-zA-Z0-9_-]+)/;
+                      const match = url.match(driveRegex);
+                      if (match && match[1]) {
+                        return `https://drive.google.com/uc?export=download&id=${match[1]}`;
+                      }
+                      return url;
+                    } catch (e) {
+                      return url;
+                    }
+                  })()}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-8 py-4 border border-white/20 text-white font-heading font-bold uppercase tracking-widest text-sm hover:bg-white/10 transition-colors w-full text-center flex items-center justify-center gap-2"
