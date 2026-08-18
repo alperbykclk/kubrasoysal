@@ -66,6 +66,7 @@ export default async function handler(req) {
         artist: track.track.artists.map((_artist) => _artist.name).join(', '),
         albumImageUrl: track.track.album.images[0].url,
         songUrl: track.track.external_urls.spotify,
+        playedAt: track.played_at,
       }));
     }
 

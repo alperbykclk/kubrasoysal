@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function SpotifySection() {
   const [data, setData] = useState(null);
@@ -73,26 +74,33 @@ export default function SpotifySection() {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto">
-          {data.recentTracks.map((track, idx) => (
-            <a 
-              key={idx}
-              href={track.songUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex flex-row items-center gap-4 p-4 bg-black border border-white/5 rounded-xl hover:border-white/20 hover:bg-white/5 transition-all duration-300 group"
-            >
-              <img 
-                src={track.albumImageUrl} 
-                alt={track.album} 
-                className="w-16 h-16 rounded-md shadow-lg group-hover:scale-105 transition-all duration-300 object-cover" 
-              />
-              <div className="flex-1 text-left">
-                <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-0.5">Son Dinlenen</p>
-                <h4 className="text-sm font-bold text-white mb-0.5 line-clamp-1 group-hover:text-green-400 transition-colors">{track.title}</h4>
-                <p className="text-xs text-gray-400 line-clamp-1">{track.artist}</p>
-              </div>
-            </a>
-          ))}
+          <AnimatePresence mode="popLayout">
+            {data.recentTracks.map((track) => (
+              <motion.a 
+                layout
+                initial={{ opacity: 0, x: -50, scale: 0.9 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.5, type: 'spring' }}
+                key={track.playedAt || track.songUrl}
+                href={track.songUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex flex-row items-center gap-4 p-4 bg-black border border-white/5 rounded-xl hover:border-white/20 hover:bg-white/5 transition-all duration-300 group"
+              >
+                <img 
+                  src={track.albumImageUrl} 
+                  alt={track.album} 
+                  className="w-16 h-16 rounded-md shadow-lg group-hover:scale-105 transition-all duration-300 object-cover" 
+                />
+                <div className="flex-1 text-left">
+                  <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-0.5">Son Dinlenen</p>
+                  <h4 className="text-sm font-bold text-white mb-0.5 line-clamp-1 group-hover:text-green-400 transition-colors">{track.title}</h4>
+                  <p className="text-xs text-gray-400 line-clamp-1">{track.artist}</p>
+                </div>
+              </motion.a>
+            ))}
+          </AnimatePresence>
         </div>
       </div>
     </section>
