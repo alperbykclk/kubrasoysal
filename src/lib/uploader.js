@@ -6,6 +6,7 @@ export async function uploadImage(file) {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result);
     reader.onerror = (err) => reject(err);
+    reader.readAsDataURL(f);
   });
 
   const fullBase64 = await getBase64(file);
