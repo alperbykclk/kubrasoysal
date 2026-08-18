@@ -1,15 +1,37 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function SpotifySection() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [localHistory, setLocalHistory] = useState([]);
+  
+  // Use a ref to access the latest data in the interval callback without triggering re-renders
+  const dataRef = useRef(null);
 
   useEffect(() => {
     const fetchSpotify = async () => {
       try {
         const response = await fetch('/api/spotify');
         const json = await response.json();
+        
+        // Check if track changed to push the old one to history
+        const prevData = dataRef.current;
+        if (prevData && prevData.isPlaying && prevData.currentTrack) {
+           const trackChanged = json.currentTrack 
+              ? prevData.currentTrack.songUrl !== json.currentTrack.songUrl
+              : true; // It stopped playing
+              
+           if (trackChanged) {
+              setLocalHistory(hist => {
+                 // Prepend old track, ensuring it's unique
+                 const newHist = [prevData.currentTrack, ...hist.filter(t => t.songUrl !== prevData.currentTrack.songUrl)];
+                 return newHist.slice(0, 4);
+              });
+           }
+        }
+        
+        dataRef.current = json;
         setData(json);
       } catch (error) {
         console.error('Error fetching Spotify data', error);
@@ -23,17 +45,30 @@ export default function SpotifySection() {
     return () => clearInterval(interval);
   }, []);
 
-  if (loading || !data || (!data.isPlaying && data.recentTracks.length === 0)) {
+  if (loading || !data || (!data.isPlaying && data.recentTracks.length === 0 && localHistory.length === 0)) {
     return null;
   }
 
-  // Determine what to show in the "Big" block
-  const isLive = data.isPlaying && data.currentTrack;
-  const bigTrack = isLive ? data.currentTrack : data.recentTracks[0];
+  // Merge local history with API recent tracks
+  let displayRecent = [];
+  const combined = [...localHistory, ...data.recentTracks];
+  const seen = new Set();
   
-  // Determine what to show in the small blocks below
-  // If playing live, show first 3 recent. If not playing live, show recent tracks 1 to 3 (since 0 is in the big block)
-  const smallTracks = isLive ? data.recentTracks.slice(0, 3) : data.recentTracks.slice(1, 4);
+  for (const track of combined) {
+     if (!seen.has(track.songUrl)) {
+        // Exclude the currently playing track from the recent list
+        if (!data.isPlaying || !data.currentTrack || data.currentTrack.songUrl !== track.songUrl) {
+           seen.add(track.songUrl);
+           displayRecent.push(track);
+        }
+     }
+  }
+
+  const isLive = data.isPlaying && data.currentTrack;
+  const bigTrack = isLive ? data.currentTrack : (displayRecent[0] || null);
+  
+  // If playing live, show first 3. If offline, bigTrack takes displayRecent[0], so show displayRecent[1] to [3]
+  const smallTracks = isLive ? displayRecent.slice(0, 3) : displayRecent.slice(1, 4);
 
   return (
     <section className="w-full bg-[#0a0a0a] py-16 px-4 border-t border-white/5 relative overflow-hidden">
@@ -52,40 +87,47 @@ export default function SpotifySection() {
 
         {bigTrack && (
           <div className="mb-10">
-            <a 
-              href={bigTrack.songUrl} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="flex flex-col md:flex-row items-center gap-6 bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-colors duration-500 group max-w-2xl mx-auto"
-            >
-              <div className="relative">
-                <img 
-                  src={bigTrack.albumImageUrl} 
-                  alt={bigTrack.album} 
-                  className={`w-28 h-28 md:w-36 md:h-36 rounded-xl shadow-2xl transition-transform duration-500 object-cover ${!isLive && 'grayscale group-hover:grayscale-0'}`} 
-                />
-                {isLive ? (
-                  <div className="absolute -top-3 -right-3 flex items-center gap-2 bg-green-500 text-black px-2 py-1 rounded-full font-bold text-[10px] uppercase tracking-wider animate-pulse shadow-lg">
-                    <div className="w-1.5 h-1.5 bg-black rounded-full animate-ping"></div>
-                    Canlı
-                  </div>
-                ) : (
-                  <div className="absolute -top-3 -right-3 flex items-center gap-2 bg-gray-600 text-white px-2 py-1 rounded-full font-bold text-[10px] uppercase tracking-wider shadow-lg">
-                    Geçmiş
-                  </div>
-                )}
-              </div>
-              <div className="flex-1 text-center md:text-left">
-                <p className={`${isLive ? 'text-green-400' : 'text-gray-400'} text-xs font-bold uppercase tracking-widest mb-1`}>
-                  {isLive ? 'NOW PLAYING' : 'LAST LISTENED'}
-                </p>
-                <h3 className="text-xl md:text-2xl font-bold text-white mb-1 leading-tight group-hover:text-green-400 transition-colors">{bigTrack.title}</h3>
-                <p className="text-sm md:text-base text-gray-300 mb-3">{bigTrack.artist}</p>
-                <span className="inline-block border border-white/20 px-4 py-1.5 rounded-full text-xs font-medium hover:bg-white hover:text-black transition-colors duration-300">
-                  Spotify'da Aç
-                </span>
-              </div>
-            </a>
+            <AnimatePresence mode="wait">
+              <motion.a 
+                key={bigTrack.songUrl}
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ duration: 0.5 }}
+                href={bigTrack.songUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex flex-col md:flex-row items-center gap-6 bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-colors duration-500 group max-w-2xl mx-auto"
+              >
+                <div className="relative">
+                  <img 
+                    src={bigTrack.albumImageUrl} 
+                    alt={bigTrack.album} 
+                    className={`w-28 h-28 md:w-36 md:h-36 rounded-xl shadow-2xl transition-transform duration-500 object-cover ${!isLive && 'grayscale group-hover:grayscale-0'}`} 
+                  />
+                  {isLive ? (
+                    <div className="absolute -top-3 -right-3 flex items-center gap-2 bg-green-500 text-black px-2 py-1 rounded-full font-bold text-[10px] uppercase tracking-wider animate-pulse shadow-lg">
+                      <div className="w-1.5 h-1.5 bg-black rounded-full animate-ping"></div>
+                      Canlı
+                    </div>
+                  ) : (
+                    <div className="absolute -top-3 -right-3 flex items-center gap-2 bg-gray-600 text-white px-2 py-1 rounded-full font-bold text-[10px] uppercase tracking-wider shadow-lg">
+                      Geçmiş
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 text-center md:text-left">
+                  <p className={`${isLive ? 'text-green-400' : 'text-gray-400'} text-xs font-bold uppercase tracking-widest mb-1`}>
+                    {isLive ? 'NOW PLAYING' : 'LAST LISTENED'}
+                  </p>
+                  <h3 className="text-xl md:text-2xl font-bold text-white mb-1 leading-tight group-hover:text-green-400 transition-colors">{bigTrack.title}</h3>
+                  <p className="text-sm md:text-base text-gray-300 mb-3">{bigTrack.artist}</p>
+                  <span className="inline-block border border-white/20 px-4 py-1.5 rounded-full text-xs font-medium hover:bg-white hover:text-black transition-colors duration-300">
+                    Spotify'da Aç
+                  </span>
+                </div>
+              </motion.a>
+            </AnimatePresence>
           </div>
         )}
 
