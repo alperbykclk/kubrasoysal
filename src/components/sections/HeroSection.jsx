@@ -65,7 +65,7 @@ export default function HeroSection() {
       <video 
           ref={videoRef}
           key={isMobile ? 'mobile' : 'desktop'}
-          src={isMobile ? "/videos/mobile_bg.mp4" : "/videos/desktop_scrub_540p.mp4"}
+          src={isMobile ? "/videos/mobile_bg.mp4" : "/videos/desktop_scrub_720p_hq.mp4"}
           muted 
           playsInline
           preload="auto"
