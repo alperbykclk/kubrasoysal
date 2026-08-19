@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCMS } from '../context/CMSContext';
 
@@ -105,7 +105,7 @@ export default function SpotifySection() {
   }
 
   const fallbackTrack = {
-     title: "KÃœBRA SOYSAL",
+     title: "Kübra Soysal",
      artist: "Spotify Collection",
      albumImageUrl: "https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg",
      songUrl: "https://open.spotify.com/search/K%C3%BCbra%20Soysal"
@@ -115,14 +115,6 @@ export default function SpotifySection() {
   
   // If playing live, show first 3. If offline, bigTrack takes displayRecent[0], so show displayRecent[1] to [3]
   let smallTracks = isLive ? displayRecent.slice(0, 3) : displayRecent.slice(1, 4);
-
-  // If we don't have enough small tracks, pad them with generic fallbacks
-  while (smallTracks.length < 3) {
-      smallTracks.push({ 
-          ...fallbackTrack, 
-          title: `Track ${smallTracks.length + 1}` 
-      });
-  }
 
   return (
     <section id="spotify-section" className="w-full bg-[#0a0a0a] py-16 px-4 border-t border-white/5 relative overflow-hidden">
