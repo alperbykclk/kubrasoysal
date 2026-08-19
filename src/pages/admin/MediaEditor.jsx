@@ -8,21 +8,24 @@ export default function MediaEditor() {
   const [uploadingAlbumId, setUploadingAlbumId] = useState(null);
 
   const handleImageUpload = async (e, albumIndex) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
 
     setUploadingAlbumId(albums[albumIndex].id);
     
     try {
-      const url = await uploadImage(file);
+      // Upload all files concurrently
+      const uploadPromises = files.map(file => uploadImage(file));
+      const urls = await Promise.all(uploadPromises);
+      
       const updated = [...albums];
-      updated[albumIndex].images.push(url);
-      if (!updated[albumIndex].coverImage) {
-        updated[albumIndex].coverImage = url;
+      updated[albumIndex].images.push(...urls);
+      if (!updated[albumIndex].coverImage && urls.length > 0) {
+        updated[albumIndex].coverImage = urls[0];
       }
       setAlbums(updated);
     } catch (err) {
-      alert('Error uploading image: ' + (err.message || err));
+      alert('Error uploading images: ' + (err.message || err));
     } finally {
       setUploadingAlbumId(null);
     }
@@ -110,12 +113,13 @@ export default function MediaEditor() {
                   ) : (
                     <>
                       <span className="text-2xl mb-2">+</span>
-                      <span className="text-[10px] uppercase tracking-widest text-gray-400 text-center px-2">Upload Photo</span>
+                      <span className="text-[10px] uppercase tracking-widest text-gray-400 text-center px-2">Upload Photo(s)</span>
                     </>
                   )}
                   <input 
                     type="file" 
-                    accept="image/*" 
+                    accept="image/*"
+                    multiple 
                     className="hidden" 
                     onChange={(e) => handleImageUpload(e, albumIndex)}
                   />
