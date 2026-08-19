@@ -51,6 +51,24 @@ export default function MediaEditor() {
     setAlbums(updated);
   };
 
+  const handleMoveImage = (albumIndex, imgIndex, direction) => {
+    const updated = [...albums];
+    const newIndex = imgIndex + direction;
+    if (newIndex < 0 || newIndex >= updated[albumIndex].images.length) return;
+    
+    // Swap
+    const temp = updated[albumIndex].images[imgIndex];
+    updated[albumIndex].images[imgIndex] = updated[albumIndex].images[newIndex];
+    updated[albumIndex].images[newIndex] = temp;
+    
+    // Always sync coverImage to be the first image in the album (index 0)
+    if (updated[albumIndex].images.length > 0) {
+      updated[albumIndex].coverImage = updated[albumIndex].images[0];
+    }
+    
+    setAlbums(updated);
+  };
+
   const handleSave = () => {
     updateSection('media', albums);
     alert('Media section updated!');
@@ -95,10 +113,36 @@ export default function MediaEditor() {
                 {album.images.map((img, imgIndex) => (
                   <div key={imgIndex} className="relative aspect-square group">
                     <img src={img} className="w-full h-full object-cover rounded-sm border border-white/10" />
+                    
+                    {/* Move Left Button */}
+                    {imgIndex > 0 && (
+                      <button 
+                        type="button"
+                        onClick={() => handleMoveImage(albumIndex, imgIndex, -1)}
+                        className="absolute bottom-2 left-2 bg-black/70 hover:bg-black text-white rounded-md w-8 h-8 flex items-center justify-center text-sm font-bold shadow-lg transition-colors z-10 opacity-0 group-hover:opacity-100"
+                        title="Move Left"
+                      >
+                        ←
+                      </button>
+                    )}
+                    
+                    {/* Move Right Button */}
+                    {imgIndex < album.images.length - 1 && (
+                      <button 
+                        type="button"
+                        onClick={() => handleMoveImage(albumIndex, imgIndex, 1)}
+                        className="absolute bottom-2 right-2 bg-black/70 hover:bg-black text-white rounded-md w-8 h-8 flex items-center justify-center text-sm font-bold shadow-lg transition-colors z-10 opacity-0 group-hover:opacity-100"
+                        title="Move Right"
+                      >
+                        →
+                      </button>
+                    )}
+
+                    {/* Delete Button */}
                     <button 
                       type="button"
                       onClick={() => handleRemoveImage(albumIndex, imgIndex)}
-                      className="absolute -top-2 -right-2 bg-red-600 hover:bg-red-700 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg transition-colors z-10"
+                      className="absolute -top-2 -right-2 bg-red-600 hover:bg-red-700 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg transition-colors z-10 opacity-0 group-hover:opacity-100"
                       title="Remove Photo"
                     >
                       ×
