@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { useCMS } from '../context/CMSContext';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function SpotifyWidget() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const { data: cmsData } = useCMS();
+  const [isSectionVisible, setIsSectionVisible] = useState(false);
 
   useEffect(() => {
     const fetchSpotify = async () => {
@@ -20,69 +22,84 @@ export default function SpotifyWidget() {
     };
 
     fetchSpotify();
-    // Refresh every 5 seconds for near-instant updates
     const interval = setInterval(fetchSpotify, 5000);
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    const checkScroll = () => {
+      const section = document.getElementById('spotify-section');
+      if (section) {
+        const rect = section.getBoundingClientRect();
+        // If the section is in the viewport (even partially)
+        if (rect.top < window.innerHeight && rect.bottom > 0) {
+          setIsSectionVisible(true);
+        } else {
+          setIsSectionVisible(false);
+        }
+      } else {
+        setIsSectionVisible(false);
+      }
+    };
+
+    window.addEventListener('scroll', checkScroll);
+    window.addEventListener('resize', checkScroll);
+    checkScroll(); // Initial check
+    
+    // Also check periodically in case the section is rendered later
+    const interval = setInterval(checkScroll, 1000);
+
+    return () => {
+      window.removeEventListener('scroll', checkScroll);
+      window.removeEventListener('resize', checkScroll);
+      clearInterval(interval);
+    };
+  }, []);
+
   if (loading || !data) return null;
 
+  // The user requested that it ONLY shows when she is currently listening!
   const isLive = data.isPlaying && data.currentTrack;
   
-  // Try to get track from API, then localStorage, then hardcoded fallback
-  let offlineTrack = data.recentTracks?.[0];
-  if (!offlineTrack && typeof window !== 'undefined') {
-     const savedStr = localStorage.getItem('spotify_local_history');
-     if (savedStr) {
-        const savedHist = JSON.parse(savedStr);
-        if (savedHist && savedHist.length > 0) offlineTrack = savedHist[0];
-     }
-  }
-
-  const fallbackTrack = {
-    title: "KÜBRA SOYSAL",
-    artist: "Listen on Spotify",
-    albumImageUrl: "https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg",
-    songUrl: "https://open.spotify.com/search/K%C3%BCbra%20Soysal"
-  };
-
-  const track = isLive ? data.currentTrack : (offlineTrack || fallbackTrack);
+  const showWidget = isLive && !isSectionVisible;
 
   return (
-    <button 
-      onClick={() => document.getElementById('spotify-section')?.scrollIntoView({ behavior: 'smooth' })}
-      className="fixed bottom-6 left-6 z-50 flex items-center gap-3 bg-black/80 backdrop-blur-md border border-white/10 px-4 py-2 rounded-full hover:bg-black transition-colors duration-300 group shadow-2xl text-left"
-    >
-      <div className="relative flex items-center justify-center">
-        {isLive ? (
-          <>
+    <AnimatePresence>
+      {showWidget && (
+        <motion.button 
+          initial={{ opacity: 0, y: 50, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 50, scale: 0.9 }}
+          transition={{ duration: 0.4, type: 'spring' }}
+          onClick={() => document.getElementById('spotify-section')?.scrollIntoView({ behavior: 'smooth' })}
+          className="fixed bottom-6 left-6 z-50 flex items-center gap-3 bg-black/80 backdrop-blur-md border border-white/10 px-4 py-2 rounded-full hover:bg-black transition-colors duration-300 group shadow-2xl text-left"
+        >
+          <div className="relative flex items-center justify-center">
             <div className="absolute inset-0 bg-green-500 rounded-full animate-ping opacity-75"></div>
             <div className="relative w-3 h-3 bg-green-500 rounded-full"></div>
-          </>
-        ) : (
-          <div className="relative w-3 h-3 bg-gray-500 rounded-full"></div>
-        )}
-      </div>
-      
-      <div className="flex flex-col max-w-[150px] sm:max-w-[200px]">
-        <p className={`text-[10px] font-bold uppercase tracking-widest leading-tight ${isLive ? 'text-green-500' : 'text-gray-500'}`}>
-          {isLive ? 'NOW PLAYING' : 'LAST LISTENED'}
-        </p>
-        <p className="text-sm font-semibold text-white truncate leading-tight group-hover:text-green-400 transition-colors">
-          {track.title}
-        </p>
-        <p className="text-xs text-gray-300 truncate leading-tight">
-          {track.artist}
-        </p>
-      </div>
+          </div>
+          
+          <div className="flex flex-col max-w-[150px] sm:max-w-[200px]">
+            <p className="text-[10px] font-bold uppercase tracking-widest leading-tight text-green-500">
+              NOW PLAYING
+            </p>
+            <p className="text-sm font-semibold text-white truncate leading-tight group-hover:text-green-400 transition-colors">
+              {data.currentTrack.title}
+            </p>
+            <p className="text-xs text-gray-300 truncate leading-tight">
+              {data.currentTrack.artist}
+            </p>
+          </div>
 
-      {track.albumImageUrl && (
-        <img 
-          src={track.albumImageUrl} 
-          alt={track.album} 
-          className={`w-10 h-10 rounded-full ml-2 border border-white/20 group-hover:scale-110 transition-transform duration-300 ${!isLive && 'grayscale hover:grayscale-0'}`}
-        />
+          {data.currentTrack.albumImageUrl && (
+            <img 
+              src={data.currentTrack.albumImageUrl} 
+              alt={data.currentTrack.album} 
+              className="w-10 h-10 rounded-full ml-2 border border-white/20 group-hover:scale-110 transition-transform duration-300"
+            />
+          )}
+        </motion.button>
       )}
-    </button>
+    </AnimatePresence>
   );
 }
