@@ -52,7 +52,7 @@ export default function MediaSection() {
               viewport={{ once: true }}
               transition={{ delay: idx * 0.1 }}
               onClick={() => setSelectedAlbum(album)}
-              className="min-w-[85vw] md:min-w-[45vw] lg:min-w-[calc(33.333%-1.33rem)] flex-shrink-0 snap-center relative aspect-[4/3] group cursor-pointer overflow-hidden border border-white/10 rounded-sm"
+              className="w-[80vw] sm:w-[50vw] md:w-[30vw] lg:w-[20rem] flex-shrink-0 snap-start relative aspect-[4/3] group cursor-pointer overflow-hidden border border-white/10 rounded-xl shadow-2xl"
             >
               {album.coverImage ? (
                 <img 
