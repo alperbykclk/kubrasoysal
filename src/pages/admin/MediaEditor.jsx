@@ -119,7 +119,7 @@ export default function MediaEditor() {
                       <button 
                         type="button"
                         onClick={() => handleMoveImage(albumIndex, imgIndex, -1)}
-                        className="absolute bottom-2 left-2 bg-black/70 hover:bg-black text-white rounded-md w-8 h-8 flex items-center justify-center text-sm font-bold shadow-lg transition-colors z-10 opacity-0 group-hover:opacity-100"
+                        className="absolute bottom-2 left-2 bg-black/70 hover:bg-black text-white rounded-md w-8 h-8 flex items-center justify-center text-sm font-bold shadow-lg transition-colors z-10 opacity-80 hover:opacity-100"
                         title="Move Left"
                       >
                         ←
@@ -131,7 +131,7 @@ export default function MediaEditor() {
                       <button 
                         type="button"
                         onClick={() => handleMoveImage(albumIndex, imgIndex, 1)}
-                        className="absolute bottom-2 right-2 bg-black/70 hover:bg-black text-white rounded-md w-8 h-8 flex items-center justify-center text-sm font-bold shadow-lg transition-colors z-10 opacity-0 group-hover:opacity-100"
+                        className="absolute bottom-2 right-2 bg-black/70 hover:bg-black text-white rounded-md w-8 h-8 flex items-center justify-center text-sm font-bold shadow-lg transition-colors z-10 opacity-80 hover:opacity-100"
                         title="Move Right"
                       >
                         →
@@ -142,7 +142,7 @@ export default function MediaEditor() {
                     <button 
                       type="button"
                       onClick={() => handleRemoveImage(albumIndex, imgIndex)}
-                      className="absolute -top-2 -right-2 bg-red-600 hover:bg-red-700 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg transition-colors z-10 opacity-0 group-hover:opacity-100"
+                      className="absolute -top-2 -right-2 bg-red-600 hover:bg-red-700 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg transition-colors z-10 opacity-80 hover:opacity-100"
                       title="Remove Photo"
                     >
                       ×
