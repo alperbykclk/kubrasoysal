@@ -42,8 +42,8 @@ export default function MediaSection() {
           <div className="h-1 w-24 bg-white mx-auto mt-6"></div>
         </motion.div>
 
-        {/* Albums Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* Albums Horizontal Scroll (Carousel) */}
+        <div className="flex overflow-x-auto gap-8 pb-12 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {albums.map((album, idx) => (
             <motion.div 
               key={album.id}
@@ -52,7 +52,7 @@ export default function MediaSection() {
               viewport={{ once: true }}
               transition={{ delay: idx * 0.1 }}
               onClick={() => setSelectedAlbum(album)}
-              className="relative aspect-square group cursor-pointer overflow-hidden border border-white/10 rounded-sm"
+              className="min-w-[85vw] md:min-w-[45vw] lg:min-w-[calc(33.333%-1.33rem)] flex-shrink-0 snap-center relative aspect-square group cursor-pointer overflow-hidden border border-white/10 rounded-sm"
             >
               {album.coverImage ? (
                 <img 
@@ -66,11 +66,14 @@ export default function MediaSection() {
                 </div>
               )}
               
-              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6">
-                <h4 className="text-2xl font-heading font-black text-white uppercase tracking-tighter translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+              {/* Disappear on hover text and gradient */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent pointer-events-none transition-opacity duration-500 group-hover:opacity-0" />
+              
+              <div className="absolute inset-0 flex flex-col justify-end p-6 pointer-events-none transition-opacity duration-500 group-hover:opacity-0">
+                <h4 className="text-2xl font-heading font-black text-white uppercase tracking-tighter drop-shadow-lg">
                   {album.title}
                 </h4>
-                <p className="text-xs text-gray-400 uppercase tracking-widest mt-1 translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-75">
+                <p className="text-xs text-gray-300 uppercase tracking-widest mt-1 drop-shadow-md">
                   {album.images.length} Photos
                 </p>
               </div>
