@@ -61,7 +61,7 @@ export default function AboutSection() {
           viewport={{ once: true }}
           className="flex flex-col"
         >
-          <h3 className="text-4xl md:text-5xl lg:text-7xl font-heading font-black text-white uppercase tracking-tighter mb-8">{artist.title}</h3>
+          <h2 className="text-4xl md:text-5xl lg:text-7xl font-heading font-black text-white uppercase tracking-tighter mb-8">{artist.title}</h2>
           <div className="space-y-6 text-gray-400 text-sm md:text-base leading-relaxed font-sans tracking-wide">
             {artist.text1 && <p>{artist.text1}</p>}
             {artist.text2 && <p>{artist.text2}</p>}

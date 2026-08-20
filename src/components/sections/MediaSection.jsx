@@ -38,7 +38,7 @@ export default function MediaSection() {
           viewport={{ once: true }}
           className="mb-20 text-center"
         >
-          <h3 className="text-4xl md:text-5xl font-heading font-bold text-white uppercase tracking-wide">Gallery</h3>
+          <h2 className="text-4xl md:text-5xl font-heading font-bold text-white uppercase tracking-wide">Gallery</h2>
           <div className="h-1 w-24 bg-white mx-auto mt-6"></div>
         </motion.div>
 
@@ -58,6 +58,7 @@ export default function MediaSection() {
                 <img 
                   src={album.coverImage} 
                   alt={album.title} 
+                  loading="lazy"
                   className="w-full h-full object-cover grayscale contrast-125 group-hover:scale-110 group-hover:grayscale-0 transition-all duration-700"
                 />
               ) : (
@@ -70,9 +71,9 @@ export default function MediaSection() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent pointer-events-none transition-opacity duration-500 group-hover:opacity-0" />
               
               <div className="absolute inset-0 flex flex-col justify-end p-6 pointer-events-none transition-opacity duration-500 group-hover:opacity-0">
-                <h4 className="text-2xl font-heading font-black text-white uppercase tracking-tighter drop-shadow-lg">
+                <h3 className="text-2xl font-heading font-black text-white uppercase tracking-tighter drop-shadow-lg">
                   {album.title}
-                </h4>
+                </h3>
                 <p className="text-xs text-gray-300 uppercase tracking-widest mt-1 drop-shadow-md">
                   {album.images.length} Photos
                 </p>
@@ -93,9 +94,9 @@ export default function MediaSection() {
           >
             {/* Header */}
             <div className="flex justify-between items-center mb-8 border-b border-white/10 pb-4">
-              <h3 className="text-3xl font-heading font-black text-white uppercase tracking-tighter">
+              <h2 className="text-3xl font-heading font-black text-white uppercase tracking-tighter">
                 {selectedAlbum.title}
-              </h3>
+              </h2>
               <button 
                 onClick={() => setSelectedAlbum(null)}
                 className="text-white hover:text-gray-400 transition-colors"

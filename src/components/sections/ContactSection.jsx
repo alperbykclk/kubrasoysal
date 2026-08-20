@@ -57,7 +57,7 @@ export default function ContactSection() {
             viewport={{ once: true }}
             className="mb-16"
           >
-            <h3 className="text-4xl md:text-5xl font-heading font-black text-white uppercase tracking-tight mb-4">{contact.title}</h3>
+            <h2 className="text-4xl md:text-5xl font-heading font-black text-white uppercase tracking-tight mb-4">{contact.title}</h2>
             <p className="text-gray-400">{contact.subtitle}</p>
           </motion.div>
           
@@ -99,7 +99,7 @@ export default function ContactSection() {
               viewport={{ once: true }}
               className="flex flex-col items-center md:items-start justify-center p-8 border border-white/10 bg-black/30 backdrop-blur-sm"
             >
-              <h4 className="text-2xl font-heading font-black text-white tracking-tight uppercase mb-4">{contact.epkTitle}</h4>
+              <h3 className="text-2xl font-heading font-black text-white tracking-tight uppercase mb-4">{contact.epkTitle}</h3>
               <p className="text-gray-400 text-sm mb-8 text-center md:text-left">
                 {contact.epkText}
               </p>
@@ -152,7 +152,7 @@ export default function ContactSection() {
               
               {/* Modal Header */}
               <div className="flex justify-between items-center mb-12 sticky top-4 z-10">
-                <h2 className="text-2xl md:text-4xl font-heading font-black tracking-tighter text-white">TECH RIDER & PRESS</h2>
+                <h3 className="text-2xl md:text-4xl font-heading font-black tracking-tighter text-white">TECH RIDER & PRESS</h3>
                 <button 
                   onClick={() => setIsEpkOpen(false)}
                   className="w-12 h-12 bg-white/10 hover:bg-white text-white hover:text-black rounded-full flex items-center justify-center transition-all"

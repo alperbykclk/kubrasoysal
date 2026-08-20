@@ -31,12 +31,12 @@ export default function SetsSection() {
       
       {/* Unique Ambient Background */}
       <div className="absolute inset-0 z-0 flex flex-col justify-center overflow-hidden pointer-events-none opacity-5">
-        <h1 className="text-[15rem] md:text-[25rem] font-heading font-black whitespace-nowrap text-transparent translate-x-[-10%]" style={{ WebkitTextStroke: '2px white' }}>
+        <div className="text-[15rem] md:text-[25rem] font-heading font-black whitespace-nowrap text-transparent translate-x-[-10%]" style={{ WebkitTextStroke: '2px white' }}>
           LIVE SETS LIVE SETS
-        </h1>
-        <h1 className="text-[15rem] md:text-[25rem] font-heading font-black whitespace-nowrap text-transparent translate-x-[-30%] -mt-32" style={{ WebkitTextStroke: '2px white' }}>
+        </div>
+        <div className="text-[15rem] md:text-[25rem] font-heading font-black whitespace-nowrap text-transparent translate-x-[-30%] -mt-32" style={{ WebkitTextStroke: '2px white' }}>
           TECH HOUSE TECH
-        </h1>
+        </div>
       </div>
 
       <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

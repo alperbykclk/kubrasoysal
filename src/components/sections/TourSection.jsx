@@ -35,7 +35,7 @@ export default function TourSection() {
           viewport={{ once: true }}
           className="text-left mb-16"
         >
-          <h3 className="text-4xl md:text-6xl font-heading font-black text-white uppercase tracking-tighter mb-3 leading-none">Tour Dates</h3>
+          <h2 className="text-4xl md:text-6xl font-heading font-black text-white uppercase tracking-tighter mb-3 leading-none">Tour Dates</h2>
           <p className="text-gray-400 font-sans tracking-widest uppercase text-xs md:text-sm">Upcoming & Past Shows</p>
         </motion.div>
 
@@ -59,9 +59,9 @@ export default function TourSection() {
               </div>
 
               <div className="flex-[2] mb-4 md:mb-0">
-                <h4 className={`font-heading font-bold text-2xl md:text-3xl uppercase tracking-tighter leading-none ${gig.isPast ? "text-gray-500 line-through decoration-gray-500" : "text-white group-hover:text-gray-300 transition-colors"}`}>
+                <h3 className={`font-heading font-bold text-2xl md:text-3xl uppercase tracking-tighter leading-none ${gig.isPast ? "text-gray-500 line-through decoration-gray-500" : "text-white group-hover:text-gray-300 transition-colors"}`}>
                   {gig.venue}
-                </h4>
+                </h3>
                 <p className={`uppercase tracking-widest text-[10px] md:text-xs mt-1.5 ${gig.isPast ? "text-gray-600 line-through" : "text-gray-400"}`}>
                   {gig.location}
                 </p>
