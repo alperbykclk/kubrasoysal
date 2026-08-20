@@ -2,4 +2,4 @@
 Allow: /
 Disallow: /admin
 
-Sitemap: https://kubrasoysal.vercel.app/sitemap.xml
+Sitemap: https://kubrasoysal.com/sitemap.xml
